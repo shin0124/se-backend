@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { Diary } from './diary.entity';
@@ -28,8 +29,11 @@ export class DiaryController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Diary> {
-    return this.diaryService.findOne(id);
+  findOne(
+    @Query('patientId', ParseIntPipe) patientId: number,
+    @Query('date') date: string,
+  ): Promise<Diary[]> {
+    return this.diaryService.findOne(patientId, date);
   }
 
   @Patch(':id')

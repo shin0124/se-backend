@@ -35,15 +35,22 @@ export class DiaryService {
     return this.diaryRepository.find({ relations: ['patient', 'symptomPic'] }); // Load relations
   }
 
-  async findOne(id: number): Promise<Diary> {
-    const diary = await this.diaryRepository.findOne({
-      where: { id },
-      relations: ['patient', 'symptomPic'],
-    }); // Load relations
-    if (!diary) {
-      throw new NotFoundException(`Diary with ID ${id} not found`);
+  async findOne(patientId: number, date: string): Promise<Diary[]> {
+    const diaries = await this.diaryRepository.find({
+      where: {
+        patient: { id: patientId },
+        date,
+      },
+      relations: ['patient', 'symptomPic'], // Load relations
+    });
+
+    if (!diaries || diaries.length === 0) {
+      throw new NotFoundException(
+        `No diary entries found for patient ID ${patientId} on date ${date}`,
+      );
     }
-    return diary;
+
+    return diaries;
   }
 
   async update(id: number, updateDiaryDto: UpdateDiaryDto): Promise<Diary> {
