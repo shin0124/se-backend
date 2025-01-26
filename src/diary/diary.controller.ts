@@ -28,10 +28,10 @@ export class DiaryController {
     return this.diaryService.findAll();
   }
 
-  @Get(':id')
+  @Get(':patientId/:date')
   findOne(
-    @Query('patientId', ParseIntPipe) patientId: number,
-    @Query('date') date: string,
+    @Param('patientId', ParseIntPipe) patientId: number,
+    @Param('date') date: string,
   ): Promise<Diary[]> {
     return this.diaryService.findOne(patientId, date);
   }
