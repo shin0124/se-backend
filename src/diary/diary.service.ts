@@ -35,7 +35,7 @@ export class DiaryService {
     return this.diaryRepository.find({ relations: ['patient', 'symptomPic'] }); // Load relations
   }
 
-  async findOne(patientId: number, date: string): Promise<Diary[]> {
+  async findOne(patientId: number, date: string): Promise<Diary> {
     const diaries = await this.diaryRepository.find({
       where: {
         patient: { id: patientId },
@@ -50,7 +50,7 @@ export class DiaryService {
       );
     }
 
-    return diaries;
+    return diaries[0];
   }
 
   async update(id: number, updateDiaryDto: UpdateDiaryDto): Promise<Diary> {

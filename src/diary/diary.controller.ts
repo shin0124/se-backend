@@ -32,7 +32,7 @@ export class DiaryController {
   findOne(
     @Param('patientId', ParseIntPipe) patientId: number,
     @Param('date') date: string,
-  ): Promise<Diary[]> {
+  ): Promise<Diary> {
     return this.diaryService.findOne(patientId, date);
   }
 
