@@ -1,21 +1,27 @@
-import { IsDateString, IsInt, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
-export class UpdateDiaryDto {
+export class CreateDiaryDto {
   @IsInt()
-  @IsOptional()
-  patientId?: number;
+  @IsNotEmpty()
+  patientId: number;
 
   @IsDateString()
-  @IsOptional()
-  date?: string;
+  @IsNotEmpty()
+  date: string;
 
   @IsString()
-  @IsOptional()
-  symptom?: string;
+  @IsNotEmpty()
+  symptom: string;
 
   @IsInt()
-  @IsOptional()
-  painScore?: number;
+  @IsNotEmpty()
+  painScore: number;
 
   @IsString()
   @IsOptional()

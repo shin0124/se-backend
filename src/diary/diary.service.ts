@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Diary } from './diary.entity';
-import { UpdateDiaryDto } from './dto/create-diary.dto';
-import { CreateDiaryDto } from './dto/update-diary.dto';
+import { CreateDiaryDto } from './dto/create-diary.dto';
+import { UpdateDiaryDto } from './dto/update-diary.dto';
 import { PatientService } from 'src/patient/patient.service';
 
 @Injectable()
@@ -15,6 +15,19 @@ export class DiaryService {
   ) {}
 
   async create(createDiaryDto: CreateDiaryDto): Promise<Diary> {
+    const existingDiary = await this.diaryRepository.findOne({
+      where: {
+        patient: { id: createDiaryDto.patientId },
+        date: createDiaryDto.date,
+      },
+    });
+
+    if (existingDiary) {
+      throw new NotFoundException(
+        `Diary entry for patient ID ${createDiaryDto.patientId} on date ${createDiaryDto.date} already exists`,
+      );
+    }
+
     const patient = await this.patientsService.findOne(
       createDiaryDto.patientId,
     );
@@ -33,6 +46,19 @@ export class DiaryService {
 
   async findAll(): Promise<Diary[]> {
     return this.diaryRepository.find({ relations: ['patient', 'symptomPic'] }); // Load relations
+  }
+
+  async findByDate(date: string): Promise<Diary[]> {
+    const diaries = await this.diaryRepository.find({
+      where: { date },
+      relations: ['patient', 'symptomPic'], // Load relations
+    });
+
+    if (!diaries || diaries.length === 0) {
+      throw new NotFoundException(`No diary entries found for date ${date}`);
+    }
+
+    return diaries;
   }
 
   async findOne(patientId: number, date: string): Promise<Diary> {

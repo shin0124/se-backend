@@ -7,12 +7,11 @@ import {
   Param,
   Delete,
   ParseIntPipe,
-  Query,
 } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { Diary } from './diary.entity';
-import { UpdateDiaryDto } from './dto/create-diary.dto';
-import { CreateDiaryDto } from './dto/update-diary.dto';
+import { CreateDiaryDto } from './dto/create-diary.dto';
+import { UpdateDiaryDto } from './dto/update-diary.dto';
 
 @Controller('diaries')
 export class DiaryController {
@@ -26,6 +25,19 @@ export class DiaryController {
   @Get()
   findAll(): Promise<Diary[]> {
     return this.diaryService.findAll();
+  }
+
+  @Get('by-date/:date')
+  findByDate(@Param('date') date: string): Promise<Diary[]> {
+    return this.diaryService.findByDate(date);
+  }
+
+  @Get(':date')
+  find(
+    @Param('patientId', ParseIntPipe) patientId: number,
+    @Param('date') date: string,
+  ): Promise<Diary> {
+    return this.diaryService.findOne(patientId, date);
   }
 
   @Get(':patientId/:date')

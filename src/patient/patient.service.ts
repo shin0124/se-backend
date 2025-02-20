@@ -21,8 +21,16 @@ export class PatientService {
     return this.patientRepository.find();
   }
 
-  async findOne(id: number): Promise<Patient | undefined> {
-    return this.patientRepository.findOne({ where: { id } });
+  async findOne(id: number): Promise<Patient> {
+    if (id == null) {
+      throw new Error('Patient id must be provided');
+    }
+    const patient = await this.patientRepository.findOne({ where: { id } });
+    if (!patient) {
+      throw new Error(`Patient with id ${id} not found`);
+    }
+    console.log('patient', id);
+    return patient;
   }
 
   async update(
