@@ -48,11 +48,76 @@ export class Diary {
   @Column({ nullable: true })
   dinnerPic: string;
 
+<<<<<<< HEAD
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Create timestamp columns
   createdAt: string;
 
   @Column({ type: 'boolean', default: false }) // Create a new column isRead for the read status
   isRead: boolean;
+=======
+  @Column({ nullable: true })
+  tea: boolean;
+
+  @Column({ nullable: true })
+  coffee: boolean;
+
+  @Column({ nullable: true })
+  coldWater: boolean;
+
+  @Column({ nullable: true })
+  cigarettes: boolean;
+
+  @Column({ nullable: true })
+  alcohol: boolean;
+
+  @Column({ nullable: true })
+  beer: boolean;
+
+  @Column({ nullable: true })
+  stickyRice: boolean;
+
+  @Column({ nullable: true })
+  fermentedFoods: boolean;
+
+  @Column({ nullable: true })
+  chickenEggs: boolean;
+
+  @Column({ nullable: true })
+  saltedFish: boolean;
+
+  @Column({ nullable: true })
+  fermentedFish: boolean;
+
+  @Column({ nullable: true })
+  chicken: boolean;
+
+  @Column({ nullable: true })
+  pork: boolean;
+
+  @Column({ nullable: true })
+  beef: boolean;
+
+  @Column({ nullable: true })
+  scalelessFish: boolean;
+
+  @Column({ nullable: true })
+  animalOrgans: boolean;
+
+  @Column({ nullable: true })
+  seafood: boolean;
+
+  @Column({ nullable: true })
+  noodles: boolean;
+
+  @Column({ nullable: true })
+  processedFoods: boolean;
+
+  @Column({ nullable: true })
+  instantNoodles: boolean;
+
+  @Column({ nullable: true })
+  cannedFish: boolean;
+>>>>>>> f27dae4709bb255794ad310043a93c55d156012e
 
   @OneToMany(() => SymtomPic, (symtomPic) => symtomPic.diary)
   symptomPic: SymtomPic[];

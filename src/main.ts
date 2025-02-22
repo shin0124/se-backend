@@ -4,8 +4,8 @@ import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const port = process.env.PORT || 1234; // ใช้ environment variable สำหรับ port
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'; // URL ของ Frontend
+  const port = process.env.PORT; // ใช้ environment variable สำหรับ port
+  const frontendUrl = process.env.FRONTEND_URL; // URL ของ Frontend
 
   logger.log(`Starting application...`);
 

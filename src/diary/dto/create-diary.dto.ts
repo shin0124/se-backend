@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsInt,
   IsNotEmpty,
@@ -46,4 +47,9 @@ export class CreateDiaryDto {
   @IsString()
   @IsOptional()
   dinnerPic?: string;
+
+  @IsOptional()
+  @IsNotEmpty({ each: true })
+  @IsBoolean({ each: true })
+  food?: boolean[];
 }
