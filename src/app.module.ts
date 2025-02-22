@@ -11,6 +11,7 @@ import { ConsultModule } from './consult/consult.module';
 import { DiaryModule } from './diary/diary.module';
 import { PatientModule } from './patient/patient.module';
 import { SymtomPicModule } from './symtom-pic/symptom-pic.module';
+import { EventModule } from './event/event.module';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { SymtomPicModule } from './symtom-pic/symptom-pic.module';
       username: 'poll_user',
       password: 'poll_password',
       database: 'poll_db',
-      entities: [Patient, Diary, SymtomPic, Consult],
+      entities: [Patient, Diary, SymtomPic, Consult, Event],
       // synchronize: process.env.NODE_ENV === 'development',
       synchronize: true,
     }),
@@ -36,6 +37,7 @@ import { SymtomPicModule } from './symtom-pic/symptom-pic.module';
     DiaryModule,
     SymtomPicModule,
     ConsultModule,
+    EventModule,
   ],
   controllers: [AppController],
   providers: [AppService],
