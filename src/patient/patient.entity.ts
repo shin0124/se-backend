@@ -1,4 +1,4 @@
-import { Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Diary } from '../diary/diary.entity';
 import { Consult } from '../consult/consult.entity';
 
@@ -6,6 +6,15 @@ import { Consult } from '../consult/consult.entity';
 export class Patient {
   @PrimaryColumn()
   id: number;
+
+  @Column({ nullable: true })
+  name: string;
+
+  @Column({ nullable: true })
+  age: number;
+
+  @Column({ nullable: true })
+  citizenID: string;
 
   @OneToMany(() => Diary, (diary) => diary.patient)
   diaries: Diary[];

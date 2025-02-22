@@ -21,6 +21,9 @@ export class Diary {
   @Column({ type: 'date' })
   date: string;
 
+  @Column({ nullable: true })
+  activity: string;
+
   @Column()
   symptom: string;
 
@@ -44,6 +47,12 @@ export class Diary {
 
   @Column({ nullable: true })
   dinnerPic: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Create timestamp columns
+  createdAt: string;
+
+  @Column({ type: 'boolean', default: false }) // Create a new column isRead for the read status
+  isRead: boolean;
 
   @OneToMany(() => SymtomPic, (symtomPic) => symtomPic.diary)
   symptomPic: SymtomPic[];
