@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   IsNotEmpty,
+  IsBoolean,
 } from 'class-validator';
 
 export class UpdateDiaryDto {
@@ -46,4 +47,9 @@ export class UpdateDiaryDto {
   @IsString()
   @IsOptional()
   dinnerPic?: string;
+
+  @IsOptional()
+  @IsNotEmpty({ each: true })
+  @IsBoolean({ each: true })
+  food?: boolean[];
 }

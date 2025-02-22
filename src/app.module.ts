@@ -5,12 +5,14 @@ import { Consult } from './consult/consult.entity';
 import { Diary } from './diary/diary.entity';
 import { Patient } from './patient/patient.entity';
 import { SymtomPic } from './symtom-pic/symtom-pic.entity';
+import { Event } from './event/event.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConsultModule } from './consult/consult.module';
 import { DiaryModule } from './diary/diary.module';
 import { PatientModule } from './patient/patient.module';
 import { SymtomPicModule } from './symtom-pic/symptom-pic.module';
+import { EventModule } from './event/event.module';
 import 'dotenv/config';
 
 @Module({
@@ -26,13 +28,14 @@ import 'dotenv/config';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Patient, Diary, SymtomPic, Consult],
+      entities: [Patient, Diary, SymtomPic, Consult, Event],
       synchronize: process.env.NODE_ENV === 'development',
     }),
     PatientModule,
     DiaryModule,
     SymtomPicModule,
     ConsultModule,
+    EventModule,
   ],
   controllers: [AppController],
   providers: [AppService],
