@@ -24,9 +24,9 @@ services:
     ports:
       - "5432:5432" # Only needed if you want to access from host directly
     environment:
-      - POSTGRES_USER=poll_user
-      - POSTGRES_PASSWORD=poll_password
-      - POSTGRES_DB=poll_db
+      - POSTGRES_USER=se_user
+      - POSTGRES_PASSWORD=se_password
+      - POSTGRES_DB=se_db
     volumes:
       - postgres_data:/var/lib/postgresql/data # Persist data
 
