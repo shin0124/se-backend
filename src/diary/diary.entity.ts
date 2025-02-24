@@ -48,13 +48,11 @@ export class Diary {
   @Column({ nullable: true })
   dinnerPic: string;
 
-<<<<<<< HEAD
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Create timestamp columns
   createdAt: string;
 
   @Column({ type: 'boolean', default: false }) // Create a new column isRead for the read status
   isRead: boolean;
-=======
   @Column({ nullable: true })
   tea: boolean;
 
@@ -117,7 +115,6 @@ export class Diary {
 
   @Column({ nullable: true })
   cannedFish: boolean;
->>>>>>> f27dae4709bb255794ad310043a93c55d156012e
 
   @OneToMany(() => SymtomPic, (symtomPic) => symtomPic.diary)
   symptomPic: SymtomPic[];
