@@ -55,7 +55,7 @@ export class DiaryService {
     const diaries = await this.diaryRepository.find({
       relations: ['patient', 'symptomPic'],
     });
-    return diaries.map(this.transformDiary);
+    return diaries.map(this.transformDiary.bind(this));
   }
 
   async findByDate(date: string): Promise<Array<Diary & { food: boolean[] }>> {
