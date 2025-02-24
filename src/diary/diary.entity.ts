@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { SymtomPic } from '../symtom-pic/symtom-pic.entity';
 import { Patient } from '../patient/patient.entity'; // Import Patient
+import { FoodImage } from 'src/food-image/food-image.entity';
 
 @Entity()
 export class Diary {
@@ -110,4 +111,13 @@ export class Diary {
 
   @OneToMany(() => SymtomPic, (symtomPic) => symtomPic.diary)
   symptomPic: SymtomPic[];
+
+  @OneToMany(() => FoodImage, (foodImage) => foodImage.diary, { eager: true })
+  foodImage: FoodImage[];
+
+  // @OneToMany(() => FoodImage, (foodImage) => foodImage.diary, { eager: true })
+  // lunchImage: FoodImage[];
+
+  // @OneToMany(() => FoodImage, (foodImage) => foodImage.diary, { eager: true })
+  // dinnerImage: FoodImage[];
 }
