@@ -48,11 +48,6 @@ export class Diary {
   @Column({ nullable: true })
   dinnerPic: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Create timestamp columns
-  createdAt: string;
-
-  @Column({ type: 'boolean', default: false }) // Create a new column isRead for the read status
-  isRead: boolean;
   @Column({ nullable: true })
   tea: boolean;
 
@@ -115,6 +110,20 @@ export class Diary {
 
   @Column({ nullable: true })
   cannedFish: boolean;
+
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    transformer: {
+      to: (value) => value,
+      from: (value) =>
+        new Date(value).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }),
+    },
+  }) // Create timestamp columns with GMT+7
+  createdAt: string;
+
+  @Column({ type: 'boolean', default: false }) // Create a new column isRead for the read status
+  isRead: boolean;
 
   @OneToMany(() => SymtomPic, (symtomPic) => symtomPic.diary)
   symptomPic: SymtomPic[];
