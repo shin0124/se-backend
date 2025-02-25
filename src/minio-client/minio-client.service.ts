@@ -1,20 +1,21 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { MinioService } from 'nestjs-minio-client';
-import { config } from './config';
+import { minioConfig } from './config';
 import { BufferedFile } from './file.model';
 import { Readable } from 'stream';
 
 @Injectable()
 export class MinioClientService {
+  [x: string]: any;
   private readonly logger: Logger;
-  private readonly baseBucket = config.MINIO_BUCKET;
+  private readonly baseBucket = minioConfig.bucket;
 
-  public get client() {
-    return this.minio.client;
+  constructor(private readonly minioService: MinioService) {
+    this.logger = new Logger(MinioClientService.name);
   }
 
-  constructor(private readonly minio: MinioService) {
-    this.logger = new Logger('MinioClientService');
+  public get client(): any {
+    return this.minioService.client;
   }
 
   // Check and create bucket if it doesn't exist
@@ -53,22 +54,16 @@ export class MinioClientService {
     const ext = file.originalname.substring(file.originalname.lastIndexOf('.'));
     const filename = `${name}${ext}`;
 
-    const metaData = {
-      'Content-Type': file.mimetype,
-      'X-Amz-Meta-Testing': '1234',
-    };
-
     try {
       // Upload the file to MinIO, including filePath
       await this.client.putObject(
         baseBucket,
         `${filePath}/${filename}`,
         file.buffer,
-        metaData,
       );
       return {
         filename: filename, // Store this for later use in the download
-        url: `${config.MINIO_ENDPOINT}:${config.MINIO_PORT}/${baseBucket}/${filePath}/${filename}`,
+        url: `${minioConfig.endPoint}:${minioConfig.port}/${baseBucket}/${filePath}/${filename}`,
       };
     } catch (err) {
       this.logger.error(`Error uploading file: ${err.message}`);
@@ -84,6 +79,8 @@ export class MinioClientService {
     filePath: string, // The file path in the bucket
     baseBucket: string = this.baseBucket,
   ) {
+    await this.ensureBucketExists(baseBucket);
+
     try {
       this.logger.log(
         `Attempting to download: ${filename} from path: ${filePath} in bucket: ${baseBucket}`,
@@ -167,7 +164,7 @@ export class MinioClientService {
 
   async getUrl(
     filePath: string,
-    baseBucket: string = config.MINIO_BUCKET,
+    baseBucket: string = minioConfig.bucket,
   ): Promise<string> {
     try {
       const url = await this.generatePresignedUrl(baseBucket, filePath);
