@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { FoodImage } from './food-image.entity';
+import { Image } from './image.entity';
 
 @Injectable()
-export class FoodImageRepository extends Repository<FoodImage> {
+export class ImageRepository extends Repository<Image> {
   constructor(private dataSource: DataSource) {
-    super(FoodImage, dataSource.createEntityManager());
+    super(Image, dataSource.createEntityManager());
   }
 
   // Add custom repository methods here if needed

@@ -1,9 +1,9 @@
 import { IsInt, IsOptional, IsString } from 'class-validator';
 
-export class UpdateFoodImageDto {
+export class UpdateImageDto {
   @IsOptional()
   @IsInt()
-  mealType?: number;
+  label?: number;
 
   @IsOptional()
   @IsString()

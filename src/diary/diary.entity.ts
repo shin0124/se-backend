@@ -6,9 +6,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { SymtomPic } from '../symtom-pic/symtom-pic.entity';
 import { Patient } from '../patient/patient.entity'; // Import Patient
-import { FoodImage } from 'src/food-image/food-image.entity';
+import { Image } from 'src/image/image.entity';
 
 @Entity()
 export class Diary {
@@ -109,15 +108,6 @@ export class Diary {
   @Column({ nullable: true })
   cannedFish: boolean;
 
-  @OneToMany(() => SymtomPic, (symtomPic) => symtomPic.diary)
-  symptomPic: SymtomPic[];
-
-  @OneToMany(() => FoodImage, (foodImage) => foodImage.diary, { eager: true })
-  foodImage: FoodImage[];
-
-  // @OneToMany(() => FoodImage, (foodImage) => foodImage.diary, { eager: true })
-  // lunchImage: FoodImage[];
-
-  // @OneToMany(() => FoodImage, (foodImage) => foodImage.diary, { eager: true })
-  // dinnerImage: FoodImage[];
+  @OneToMany(() => Image, (image) => image.diary, { eager: true })
+  image: Image[];
 }

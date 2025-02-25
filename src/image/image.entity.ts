@@ -8,16 +8,16 @@ import {
 import { Diary } from '../diary/diary.entity';
 
 @Entity()
-export class FoodImage {
+export class Image {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Diary, (diary) => diary.foodImage)
+  @ManyToOne(() => Diary, (diary) => diary.image)
   @JoinColumn({ name: 'diary_id' })
   diary: Diary;
 
   @Column()
-  mealType: number; // '0: breakfast', '1: lunch', '2: dinner'
+  label: string;
 
   @Column()
   type: string;
