@@ -21,6 +21,9 @@ export class Diary {
   @Column({ type: 'date' })
   date: string;
 
+  @Column({ nullable: true })
+  activity: string;
+
   @Column()
   symptom: string;
 
@@ -110,4 +113,18 @@ export class Diary {
 
   @OneToMany(() => Image, (image) => image.diary, { eager: true })
   image: Image[];
+
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    transformer: {
+      to: (value) => value,
+      from: (value) =>
+        new Date(value).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }),
+    },
+  }) // Create timestamp columns with GMT+7
+  createdAt: string;
+
+  @Column({ type: 'boolean', default: false }) // Create a new column isRead for the read status
+  isRead: boolean;
 }
