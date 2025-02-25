@@ -6,8 +6,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { SymtomPic } from '../symtom-pic/symtom-pic.entity';
 import { Patient } from '../patient/patient.entity'; // Import Patient
+import { Image } from 'src/image/image.entity';
 
 @Entity()
 export class Diary {
@@ -111,6 +111,9 @@ export class Diary {
   @Column({ nullable: true })
   cannedFish: boolean;
 
+  @OneToMany(() => Image, (image) => image.diary, { eager: true })
+  image: Image[];
+
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
@@ -124,7 +127,4 @@ export class Diary {
 
   @Column({ type: 'boolean', default: false }) // Create a new column isRead for the read status
   isRead: boolean;
-
-  @OneToMany(() => SymtomPic, (symtomPic) => symtomPic.diary)
-  symptomPic: SymtomPic[];
 }

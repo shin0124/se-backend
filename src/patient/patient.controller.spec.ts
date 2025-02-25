@@ -15,11 +15,13 @@ describe('PatientController', () => {
       id: 1,
       diaries: [],
       consults: [],
+      events: [],
     },
     {
       id: 2,
       diaries: [],
       consults: [],
+      events: [],
     },
   ];
 
