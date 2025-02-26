@@ -74,4 +74,14 @@ export class EventService {
       },
     });
   }
+
+  async removeByDateAndPatient(id: number): Promise<void> {
+    const event = await this.eventRepository.findOne({
+      where: { id: id },
+    });
+    if (!event) {
+      throw new NotFoundException(`Event id: ${id} is not found`);
+    }
+    await this.eventRepository.remove(event);
+  }
 }

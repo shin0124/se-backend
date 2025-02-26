@@ -17,4 +17,7 @@ export class Consult {
 
   @Column()
   answer: string;
+
+  @Column()
+  reply: string;
 }

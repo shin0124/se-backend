@@ -14,8 +14,8 @@ export class Patient {
   @Column({ nullable: true })
   age: number;
 
-  @Column({ nullable: true })
-  citizenID: string;
+  @Column({ nullable: false })
+  HN: number;
 
   @OneToMany(() => Diary, (diary) => diary.patient)
   diaries: Diary[];
