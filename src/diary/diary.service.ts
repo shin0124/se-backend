@@ -53,7 +53,7 @@ export class DiaryService {
 
   async findAll(): Promise<Array<Diary & { food: boolean[] }>> {
     const diaries = await this.diaryRepository.find({
-      relations: ['patient', 'symptomPic'],
+      relations: ['patient'],
     });
     return diaries.map(this.transformDiary.bind(this));
   }
@@ -61,7 +61,7 @@ export class DiaryService {
   async findByDate(date: string): Promise<Array<Diary & { food: boolean[] }>> {
     const diaries = await this.diaryRepository.find({
       where: { date },
-      relations: ['patient', 'symptomPic'],
+      relations: ['patient'],
     });
 
     if (!diaries || diaries.length === 0) {
@@ -76,7 +76,7 @@ export class DiaryService {
   ): Promise<Array<Diary & { food: boolean[] }>> {
     const diaries = await this.diaryRepository.find({
       where: { patient: { id: patientId } },
-      relations: ['patient', 'symptomPic'],
+      relations: ['patient'],
       order: { date: 'ASC' }, // Order by date ascending
     });
 
@@ -95,7 +95,7 @@ export class DiaryService {
   ): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
       where: { patient: { id: patientId }, date },
-      relations: ['patient', 'symptomPic'],
+      relations: ['patient'],
     });
 
     if (!diary) {
