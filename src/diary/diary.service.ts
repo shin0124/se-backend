@@ -71,22 +71,13 @@ export class DiaryService {
     return diaries.map((diary) => this.transformDiary(diary)); // Ensure mapping is correct
   }
 
-  async findByID(
-    patientId: number,
-  ): Promise<Array<Diary & { food: boolean[] }>> {
-    const diaries = await this.diaryRepository.find({
-      where: { patient: { id: patientId } },
+  async findByID(id: number): Promise<Diary & { food: boolean[] }> {
+    const diary = await this.diaryRepository.findOne({
+      where: { id },
       relations: ['patient'],
-      order: { date: 'ASC' }, // Order by date ascending
     });
 
-    if (!diaries || diaries.length === 0) {
-      throw new NotFoundException(
-        `No diary entries found for patient ID ${patientId}`,
-      );
-    }
-
-    return diaries.map((diary) => this.transformDiary(diary)); // Ensure mapping is correct
+    return this.transformDiary(diary);
   }
 
   async findOne(
