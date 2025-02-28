@@ -27,9 +27,16 @@ export class DiaryController {
     return this.diaryService.findAll();
   }
 
-  @Get(':id')
-  findByID(@Param('id') id: number): Promise<Diary> {
-    return this.diaryService.findByID(id);
+  @Get('by-diary/:id')
+  findByDiaryId(@Param('id') id: number): Promise<Diary & { food: boolean[] }> {
+    return this.diaryService.findByDiaryId(id);
+  }
+
+  @Get('by-patient/:id')
+  findByPatientId(
+    @Param('id') id: number,
+  ): Promise<(Diary & { food: boolean[] })[]> {
+    return this.diaryService.findByPatientId(id);
   }
 
   @Get('by-date/:date')

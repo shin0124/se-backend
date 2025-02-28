@@ -27,6 +27,9 @@ export class Diary {
   @Column()
   symptom: string;
 
+  @Column({ nullable: true })
+  symptomPic: string;
+
   @Column({ type: 'int' })
   painScore: number;
 
