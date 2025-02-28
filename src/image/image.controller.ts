@@ -30,7 +30,7 @@ export class ImageController {
     @Param('diaryId') diaryId: number,
     @UploadedFiles() files: (Express.Multer.File | string)[],
   ) {
-    console.log(files);
+    console.log('Post File: ', files);
 
     if (!files || files.length === 0) {
       throw new HttpException('No images uploaded', HttpStatus.BAD_REQUEST);
