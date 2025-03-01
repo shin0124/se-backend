@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Consult } from './consult/consult.entity';
 import { Diary } from './diary/diary.entity';
 import { Patient } from './patient/patient.entity';
-import { Image } from './image/image.entity';
 import { Event } from './event/event.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -37,7 +36,7 @@ console.log('Database Config:', {
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Patient, Diary, Image, Consult, Event],
+      entities: [Patient, Diary, Consult, Event],
       synchronize: process.env.NODE_ENV === 'development',
     }),
     PatientModule,

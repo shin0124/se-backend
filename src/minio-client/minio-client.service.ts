@@ -2,7 +2,6 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { MinioService } from 'nestjs-minio-client';
 import { minioConfig } from './config';
 import { BufferedFile } from './file.model';
-import { Readable } from 'stream';
 
 @Injectable()
 export class MinioClientService {
@@ -100,46 +99,26 @@ export class MinioClientService {
       );
     }
   }
-
-  public async getObjectsInFolder(
-    folderPath: string, // The folder path in the bucket
+  async listFiles(
+    folderPath: string,
     baseBucket: string = this.baseBucket,
-  ): Promise<{ filename: string; stream: Readable }[]> {
-    try {
-      // Ensure bucket exists
-      await this.ensureBucketExists(baseBucket);
+  ): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const files: string[] = [];
+      const stream = this.client.listObjects(baseBucket, folderPath, true);
 
-      // List objects in the specified folder
-      const objects = await this.client.listObjects(
-        baseBucket,
-        folderPath,
-        true,
-      ); // Recursive listing
+      stream.on('data', (obj) => {
+        files.push(obj.name);
+      });
 
-      const fileStreams: { filename: string; stream: Readable }[] = [];
+      stream.on('end', () => {
+        resolve(files);
+      });
 
-      for await (const obj of objects) {
-        if (obj.prefix || obj.size === 0) {
-          // Skip folders and empty objects
-          continue;
-        }
-
-        const filename = obj.name.substring(folderPath.length); // Remove folder prefix
-
-        // Get object stream
-        const dataStream = await this.client.getObject(baseBucket, obj.name);
-
-        fileStreams.push({ filename, stream: dataStream });
-      }
-
-      return fileStreams;
-    } catch (err) {
-      this.logger.error(`Error listing objects in folder: ${err.message}`);
-      throw new HttpException(
-        `Error listing objects in folder: ${err.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+      stream.on('error', (err) => {
+        reject(err);
+      });
+    });
   }
 
   public async delete(
