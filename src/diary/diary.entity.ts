@@ -1,13 +1,11 @@
 import {
   Entity,
   Column,
-  OneToMany,
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { Patient } from '../patient/patient.entity'; // Import Patient
-import { Image } from 'src/image/image.entity';
 
 @Entity()
 export class Diary {
@@ -113,9 +111,6 @@ export class Diary {
 
   @Column({ nullable: true })
   cannedFish: boolean;
-
-  @OneToMany(() => Image, (image) => image.diary, { eager: true })
-  image: Image[];
 
   @Column({
     type: 'timestamp',

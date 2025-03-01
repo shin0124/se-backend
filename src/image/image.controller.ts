@@ -1,21 +1,15 @@
 import {
   Controller,
   Post,
-  Body,
   Param,
-  UploadedFile,
   UseInterceptors,
   Logger,
-  Delete,
   Get,
-  Patch,
   UploadedFiles,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { CreateImageDto as CreateImageDto } from './dto/create-image.dto';
-import { UpdateImageDto } from './dto/update-image.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ImageService } from './image.service';
 
 @Controller('images')
@@ -44,43 +38,43 @@ export class ImageController {
     };
   }
 
-  @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async createImage(
-    @Body() createImageDto: CreateImageDto,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    try {
-      const image = await this.imageService.createImage(createImageDto, file);
-      return image;
-    } catch (error) {
-      this.logger.error(error);
-      throw error;
-    }
-  }
+  // @Post()
+  // @UseInterceptors(FileInterceptor('file'))
+  // async createImage(
+  //   @Body() createImageDto: CreateImageDto,
+  //   @UploadedFile() file: Express.Multer.File,
+  // ) {
+  //   try {
+  //     const image = await this.imageService.createImage(createImageDto, file);
+  //     return image;
+  //   } catch (error) {
+  //     this.logger.error(error);
+  //     throw error;
+  //   }
+  // }
 
-  @Patch(':id')
-  async updateImage(
-    @Param('id') id: number,
-    @Body() updateImageDto: UpdateImageDto,
-  ) {
-    try {
-      const image = await this.imageService.updateImage(id, updateImageDto);
-      return image;
-    } catch (error) {
-      this.logger.error(error);
-      throw error;
-    }
-  }
+  // @Patch(':id')
+  // async updateImage(
+  //   @Param('id') id: number,
+  //   @Body() updateImageDto: UpdateImageDto,
+  // ) {
+  //   try {
+  //     const image = await this.imageService.updateImage(id, updateImageDto);
+  //     return image;
+  //   } catch (error) {
+  //     this.logger.error(error);
+  //     throw error;
+  //   }
+  // }
 
-  @Delete(':diaryId/:label/:imageId')
-  async deleteImage(
-    @Param('diaryId') diaryId: number,
-    @Param('label') label: string,
-    @Param('imageId') imageId: number,
-  ) {
-    return this.imageService.deleteImage(diaryId, label, imageId);
-  }
+  // @Delete(':diaryId/:label/:imageId')
+  // async deleteImage(
+  //   @Param('diaryId') diaryId: number,
+  //   @Param('label') label: string,
+  //   @Param('imageId') imageId: number,
+  // ) {
+  //   return this.imageService.deleteImage(diaryId, label, imageId);
+  // }
 
   @Get(':diaryId')
   async getImages(@Param('diaryId') diaryId: number) {
