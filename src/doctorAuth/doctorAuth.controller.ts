@@ -7,22 +7,22 @@ import {
   Get,
   Param,
 } from '@nestjs/common';
-import { PatientAuthService } from './patientAuth.service';
+import { DoctorAuthService } from './doctorAuth.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { RegisterDto } from '../auth/register.dto';
+import { RegisterDto } from './register.dto';
 
-@Controller('patientAuth')
-export class PatientAuthController {
-  constructor(private patientAuthService: PatientAuthService) {}
+@Controller('doctorAuth')
+export class DoctorAuthController {
+  constructor(private doctorAuthService: DoctorAuthService) {}
 
   @Post('login')
   async login(@Body() body: RegisterDto) {
-    return this.patientAuthService.login(body.username, body.password);
+    return this.doctorAuthService.login(body.email, body.password);
   }
 
   @Post('register')
   async register(@Body() body: RegisterDto) {
-    return this.patientAuthService.register(body.username, body.password);
+    return this.doctorAuthService.register(body.email, body.password);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -33,6 +33,6 @@ export class PatientAuthController {
 
   @Get('user/:id')
   async findOne(@Param('id') id: string) {
-    return this.patientAuthService.findOne(id);
+    return this.doctorAuthService.findOne(id);
   }
 }

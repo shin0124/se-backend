@@ -23,7 +23,6 @@ export class PatientService {
     if (!patient) {
       throw new Error(`Patient with id ${id} not found`);
     }
-    console.log('patient', id);
     return patient;
   }
 

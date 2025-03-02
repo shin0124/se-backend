@@ -14,7 +14,9 @@ import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './event.entity';
-import { JwtAuthGuard } from 'src/patientAuth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { PatientRoleGuard } from 'src/auth/guard/patient-auth.guard';
+import { PatientOwnEventGuard } from 'src/auth/guard/event-patient-auth.guard';
 
 @Controller('events')
 @UseGuards(JwtAuthGuard)
@@ -22,6 +24,7 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @UseGuards(PatientRoleGuard)
   async create(
     @Body() createEventDto: CreateEventDto,
     @Req() req: any,
@@ -29,17 +32,17 @@ export class EventController {
     return this.eventService.create(createEventDto, req.user.id);
   }
 
-  @Put(':id')
+  @Put(':eventId')
+  @UseGuards(PatientOwnEventGuard)
   async update(
-    @Param('id') id: number,
+    @Param('eventId') eventId: number,
     @Body() updateEventDto: UpdateEventDto,
-    @Req() req: any,
   ): Promise<Event> {
-    updateEventDto.id = id;
-    return this.eventService.updateEvent(updateEventDto, req.user.id);
+    return this.eventService.updateEvent(updateEventDto, eventId);
   }
 
   @Get()
+  @UseGuards(PatientRoleGuard)
   async getEventsByMonthAndPatientID(
     @Query('month') month: number,
     @Query('year') year: number,
@@ -52,8 +55,9 @@ export class EventController {
     );
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number, @Req() req: any): Promise<void> {
-    return this.eventService.removeByDateAndPatient(id, req.user.id);
+  @Delete(':eventId')
+  @UseGuards(PatientOwnEventGuard)
+  async remove(@Param('eventId') eventId: number): Promise<void> {
+    return this.eventService.removeByDateAndPatient(eventId);
   }
 }

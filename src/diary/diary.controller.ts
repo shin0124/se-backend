@@ -14,7 +14,11 @@ import { DiaryService } from './diary.service';
 import { Diary } from './diary.entity';
 import { CreateDiaryDto } from './dto/create-diary.dto';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
-import { JwtAuthGuard } from 'src/patientAuth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { DoctorRoleGuard } from 'src/auth/guard/doctor-auth.guard';
+import { DiaryGuard } from 'src/auth/guard/diary-auth.guard';
+import { PatientOwnDiaryGuard } from 'src/auth/guard/diary-patient-auth.guard';
+import { PatientRoleGuard } from 'src/auth/guard/patient-auth.guard';
 
 @Controller('diaries')
 @UseGuards(JwtAuthGuard)
@@ -22,6 +26,7 @@ export class DiaryController {
   constructor(private readonly diaryService: DiaryService) {}
 
   @Post('create')
+  @UseGuards(PatientRoleGuard)
   create(
     @Body() createDiaryDto: CreateDiaryDto,
     @Req() req: any,
@@ -30,43 +35,43 @@ export class DiaryController {
   }
 
   @Get('all')
-  findAll(@Req() req: any): Promise<Diary[]> {
-    return this.diaryService.findAll(); // Send user id to service
+  @UseGuards(DoctorRoleGuard)
+  findAll(): Promise<Diary[]> {
+    return this.diaryService.findAll();
   }
 
-  @Get('details/:id')
-  findByID(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
-  ): Promise<Diary> {
-    return this.diaryService.findByID(id, req.user.id); // Send user id to service
+  @Get('details/:diaryId')
+  @UseGuards(DiaryGuard)
+  findByID(@Param('diaryId', ParseIntPipe) diaryId: number): Promise<Diary> {
+    return this.diaryService.findByID(diaryId);
   }
 
   @Get('by-date/:date')
-  findByDate(@Param('date') date: string, @Req() req: any): Promise<Diary[]> {
-    return this.diaryService.findByDate(date); // Send user id to service
+  @UseGuards(DoctorRoleGuard)
+  findByDate(@Param('date') date: string): Promise<Diary[]> {
+    return this.diaryService.findByDate(date);
   }
 
   @Get('entry/:date')
+  @UseGuards(PatientRoleGuard)
   findOne(@Param('date') date: string, @Req() req: any): Promise<Diary> {
-    return this.diaryService.findOne(req.user.id, date); // Send user id to service
+    return this.diaryService.findOne(req.user.id, date);
   }
 
-  @Patch('update/:id')
+  @Patch('update/:diaryId')
+  @UseGuards(PatientOwnDiaryGuard)
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('diaryId', ParseIntPipe) diaryId: number,
     @Body() updateDiaryDto: UpdateDiaryDto,
     @Req() req: any,
   ): Promise<Diary> {
-    updateDiaryDto.patientId = req.user.id; // Ensure the update belongs to the logged-in user
-    return this.diaryService.update(id, updateDiaryDto, req.user.id); // Send user id to service
+    updateDiaryDto.patientId = req.user.id;
+    return this.diaryService.update(diaryId, updateDiaryDto);
   }
 
-  @Delete('delete/:id')
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
-  ): Promise<void> {
-    return this.diaryService.remove(id, req.user.id); // Send user id to service
+  @Delete('delete/:diaryId')
+  @UseGuards(PatientOwnDiaryGuard)
+  remove(@Param('diaryId', ParseIntPipe) diaryId: number): Promise<void> {
+    return this.diaryService.remove(diaryId);
   }
 }

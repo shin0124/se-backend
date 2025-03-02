@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtAuthGuard } from 'src/patientAuth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 

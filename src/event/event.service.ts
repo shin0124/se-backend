@@ -28,21 +28,13 @@ export class EventService {
     return await this.eventRepository.save(event);
   }
 
-  async updateEvent(updateEventDto: UpdateEventDto, patientId): Promise<Event> {
+  async updateEvent(updateEventDto: UpdateEventDto, id): Promise<Event> {
     const existingEvent = await this.eventRepository.findOne({
-      where: { id: updateEventDto.id },
+      where: { id },
       relations: ['patient'],
     });
     if (!existingEvent) {
-      throw new NotFoundException(
-        `Event with ID ${updateEventDto.id} not found`,
-      );
-    }
-
-    if (patientId !== existingEvent.patient.id) {
-      throw new NotFoundException(
-        "You are not authorized to access this patient's event.",
-      );
+      throw new NotFoundException(`Event with ID ${id} not found`);
     }
 
     existingEvent.event = updateEventDto.event;
@@ -78,19 +70,13 @@ export class EventService {
     });
   }
 
-  async removeByDateAndPatient(id: number, patientId): Promise<void> {
+  async removeByDateAndPatient(id: number): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id: id },
       relations: ['patient'],
     });
     if (!event) {
       throw new NotFoundException(`Event id: ${id} is not found`);
-    }
-
-    if (patientId !== event.patient.id) {
-      throw new NotFoundException(
-        "You are not authorized to access this patient's event.",
-      );
     }
 
     await this.eventRepository.remove(event);

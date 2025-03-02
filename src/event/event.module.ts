@@ -4,7 +4,7 @@ import { EventService } from './event.service';
 import { EventController } from './event.controller';
 import { Event } from './event.entity';
 import { PatientModule } from '../patient/patient.module';
-import { AuthModule } from 'src/patientAuth/auth.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Event]), PatientModule, AuthModule],

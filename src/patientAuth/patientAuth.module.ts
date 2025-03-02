@@ -5,8 +5,8 @@ import { PatientAuthController } from './patientAuth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Patient } from 'src/patient/patient.entity';
 import { ConfigModule } from '@nestjs/config';
-import { LocalStrategy } from './strategies/local.strategy';
-import { AuthModule } from './auth.module';
+import { PatientLocalStrategy } from '../auth/strategies/patientLocal.strategy';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { AuthModule } from './auth.module';
     ConfigModule.forRoot(),
   ],
   controllers: [PatientAuthController],
-  providers: [PatientAuthService, LocalStrategy],
+  providers: [PatientAuthService, PatientLocalStrategy],
   exports: [PatientAuthService],
 })
 export class PatientAuthModule {}

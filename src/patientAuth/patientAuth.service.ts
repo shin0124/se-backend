@@ -28,7 +28,7 @@ export class PatientAuthService {
   }
 
   async login(id: string, pass: string) {
-    const payload = { patientid: id, sub: pass };
+    const payload = { patientid: id, sub: pass, userrole: 'patient' };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
@@ -50,7 +50,7 @@ export class PatientAuthService {
       password: hashedPassword,
     });
     this.patientsRepository.save(patient);
-    const payload = { patientid: id, sub: pass };
+    const payload = { patientid: id, sub: pass, userrole: 'patient' };
 
     return {
       access_token: await this.jwtService.signAsync(payload),

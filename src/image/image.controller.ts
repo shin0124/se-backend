@@ -9,11 +9,12 @@ import {
   HttpException,
   HttpStatus,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ImageService } from './image.service';
-import { JwtAuthGuard } from 'src/patientAuth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { PatientOwnDiaryGuard } from 'src/auth/guard/diary-patient-auth.guard';
+import { DiaryGuard } from 'src/auth/guard/diary-auth.guard';
 
 @Controller('images')
 @UseGuards(JwtAuthGuard)
@@ -23,23 +24,17 @@ export class ImageController {
   constructor(private readonly imageService: ImageService) {}
 
   @Post(':diaryId')
+  @UseGuards(PatientOwnDiaryGuard)
   @UseInterceptors(FilesInterceptor('images'))
   async uploadImages(
     @Param('diaryId') diaryId: number,
     @UploadedFiles() files: (Express.Multer.File | string)[],
-    @Req() req: any,
   ) {
-    console.log(files);
-
     if (!files || files.length === 0) {
       throw new HttpException('No images uploaded', HttpStatus.BAD_REQUEST);
     }
 
-    const uploadedImages = await this.imageService.uploadImages(
-      diaryId,
-      files,
-      req.user.id,
-    );
+    const uploadedImages = await this.imageService.uploadImages(diaryId, files);
 
     return {
       message: 'Images uploaded successfully',
@@ -48,8 +43,8 @@ export class ImageController {
   }
 
   @Get(':diaryId')
-  getImages(@Param('diaryId') diaryId: number, @Req() req: any) {
-    const patientId = req.user.id;
-    return this.imageService.getImages(diaryId, patientId);
+  @UseGuards(DiaryGuard)
+  getImages(@Param('diaryId') diaryId: number) {
+    return this.imageService.getImages(diaryId);
   }
 }

@@ -7,12 +7,15 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ConsultService } from './consult.service';
 import { CreateConsultDto } from './dto/create-consult.dto';
 import { UpdateConsultDto } from './dto/update-consult.dto';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 
 @Controller('consults')
+@UseGuards(JwtAuthGuard)
 export class ConsultController {
   constructor(private readonly consultService: ConsultService) {}
 

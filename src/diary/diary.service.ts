@@ -69,7 +69,7 @@ export class DiaryService {
     return diaries.map((diary) => this.transformDiary(diary)); // Ensure mapping is correct
   }
 
-  async findByID(id: number, patientId): Promise<Diary & { food: boolean[] }> {
+  async findByID(id: number): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
       where: { id },
       relations: ['patient'],
@@ -77,12 +77,6 @@ export class DiaryService {
 
     if (!diary) {
       throw new NotFoundException(`No diary entries found`);
-    }
-
-    if (patientId !== diary.patient.id) {
-      throw new NotFoundException(
-        "You are not authorized to access this patient's diary.",
-      );
     }
 
     return this.transformDiary(diary);
@@ -106,19 +100,10 @@ export class DiaryService {
     return this.transformDiary(diary); // Use the transformation function
   }
 
-  async update(
-    id: number,
-    updateDiaryDto: UpdateDiaryDto,
-    patientId,
-  ): Promise<Diary> {
+  async update(id: number, updateDiaryDto: UpdateDiaryDto): Promise<Diary> {
     const existingDiary = await this.diaryRepository.findOne({ where: { id } });
-    if (!existingDiary || !existingDiary.patient) {
+    if (!existingDiary) {
       throw new NotFoundException(`Diary with ID ${id} not found`);
-    }
-    if (patientId !== existingDiary.patient.id) {
-      throw new NotFoundException(
-        "You are not authorized to access this patient's diary.",
-      );
     }
 
     if (updateDiaryDto.patientId) {
@@ -142,21 +127,15 @@ export class DiaryService {
     return this.transformDiary(updatedDiary);
   }
 
-  async remove(id: number, patientId: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     // Fetch the diary entry to ensure it exists and belongs to the patient
     const existingDiary = await this.diaryRepository.findOne({
       where: { id },
       relations: ['patient'],
     });
 
-    if (!existingDiary || ! existingDiary.patient) {
+    if (!existingDiary) {
       throw new NotFoundException(`Diary with ID ${id} not found`);
-    }
-
-    if (existingDiary.patient.id !== patientId) {
-      throw new NotFoundException(
-        "You are not authorized to access this patient's diary.",
-      );
     }
 
     // List all images in the diary folder
