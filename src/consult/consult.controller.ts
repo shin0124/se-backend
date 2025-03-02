@@ -7,12 +7,15 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ConsultService } from './consult.service';
 import { CreateConsultDto } from './dto/create-consult.dto';
 import { UpdateConsultDto } from './dto/update-consult.dto';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 
 @Controller('consults')
+@UseGuards(JwtAuthGuard)
 export class ConsultController {
   constructor(private readonly consultService: ConsultService) {}
 
@@ -32,7 +35,7 @@ export class ConsultController {
   }
 
   @Get('patient/:patientId')
-  findByPatientId(@Param('patientId', ParseIntPipe) patientId: number) {
+  findByPatientId(@Param('patientId', ParseIntPipe) patientId: string) {
     return this.consultService.findByPatientId(patientId);
   }
 

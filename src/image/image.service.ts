@@ -14,6 +14,7 @@ export class ImageService {
   async uploadImages(diaryId: number, files: (Express.Multer.File | string)[]) {
     const diary = await this.diaryRepository.findOne({
       where: { id: diaryId },
+      relations: ['patient'],
     });
 
     if (!diary) {
@@ -44,6 +45,15 @@ export class ImageService {
 
   async getImages(diaryId: number) {
     try {
+      const diary = await this.diaryRepository.findOne({
+        where: { id: diaryId },
+        relations: ['patient'],
+      });
+
+      if (!diary) {
+        throw new HttpException('Diary not found', HttpStatus.NOT_FOUND);
+      }
+
       const paths = await this.minioClientService.listFiles(`${diaryId}/`);
 
       const imagesWithUrls = await Promise.all(

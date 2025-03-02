@@ -1,10 +1,6 @@
-import { IsNotEmpty, IsString, IsDateString, IsInt } from 'class-validator';
+import { IsNotEmpty, IsString, IsDateString } from 'class-validator';
 
 export class CreateEventDto {
-  @IsNotEmpty()
-  @IsInt()
-  patientId: number;
-
   @IsNotEmpty()
   @IsDateString()
   date: string;

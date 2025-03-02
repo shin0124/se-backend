@@ -10,7 +10,7 @@ import {
 export class UpdateDiaryDto {
   @IsInt()
   @IsNotEmpty()
-  patientId?: number;
+  patientId?: string;
 
   @IsDateString()
   @IsOptional()

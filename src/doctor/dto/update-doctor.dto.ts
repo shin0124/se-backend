@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdatePatientDto {
+export class UpdateDoctorDto {
   @IsString()
   @IsNotEmpty()
   password: string;

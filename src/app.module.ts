@@ -13,6 +13,10 @@ import { PatientModule } from './patient/patient.module';
 import { ImageModule } from './image/image.module';
 import { EventModule } from './event/event.module';
 import 'dotenv/config';
+import { PatientAuthModule } from './patientAuth/patientAuth.module';
+import { DoctorAuthModule } from './doctorAuth/doctorAuth.module';
+import { DoctorModule } from './doctor/doctor.module';
+import { Doctor } from './doctor/doctor.entity';
 
 console.log('Database Config:', {
   host: process.env.DB_HOST,
@@ -36,7 +40,7 @@ console.log('Database Config:', {
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Patient, Diary, Consult, Event],
+      entities: [Patient, Diary, Consult, Event, Doctor],
       synchronize: process.env.NODE_ENV === 'development',
     }),
     PatientModule,
@@ -44,6 +48,9 @@ console.log('Database Config:', {
     ImageModule,
     ConsultModule,
     EventModule,
+    DoctorModule,
+    PatientAuthModule,
+    DoctorAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

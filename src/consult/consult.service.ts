@@ -28,7 +28,7 @@ export class ConsultService {
     }); // Eager load patient
   }
 
-  async findByPatientId(patientId: number): Promise<Consult[]> {
+  async findByPatientId(patientId: string): Promise<Consult[]> {
     return this.consultRepository.find({
       where: {
         patient: { id: patientId },
