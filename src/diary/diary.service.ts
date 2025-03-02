@@ -5,6 +5,7 @@ import { Diary } from './diary.entity';
 import { CreateDiaryDto } from './dto/create-diary.dto';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
 import { PatientService } from 'src/patient/patient.service';
+import { MinioClientService } from 'src/minio-client/minio-client.service';
 
 @Injectable()
 export class DiaryService {
@@ -12,29 +13,26 @@ export class DiaryService {
     @InjectRepository(Diary)
     private diaryRepository: Repository<Diary>,
     private patientsService: PatientService, // Inject Patient service
+    private readonly minioClientService: MinioClientService,
   ) {}
 
-  async create(createDiaryDto: CreateDiaryDto): Promise<Diary> {
+  async create(createDiaryDto: CreateDiaryDto, patientId): Promise<Diary> {
     const existingDiary = await this.diaryRepository.findOne({
       where: {
-        patient: { id: createDiaryDto.patientId },
+        patient: { id: patientId },
         date: createDiaryDto.date,
       },
     });
 
     if (existingDiary) {
       throw new NotFoundException(
-        `Diary entry for patient ID ${createDiaryDto.patientId} on date ${createDiaryDto.date} already exists`,
+        `Diary entry for patient ID ${patientId} on date ${createDiaryDto.date} already exists`,
       );
     }
 
-    const patient = await this.patientsService.findOne(
-      createDiaryDto.patientId,
-    );
+    const patient = await this.patientsService.findOne(patientId);
     if (!patient) {
-      throw new NotFoundException(
-        `Patient with ID ${createDiaryDto.patientId} not found`,
-      );
+      throw new NotFoundException(`Patient with ID ${patientId} not found`);
     }
 
     // Convert food array to individual boolean fields
@@ -71,17 +69,27 @@ export class DiaryService {
     return diaries.map((diary) => this.transformDiary(diary)); // Ensure mapping is correct
   }
 
-  async findByID(id: number): Promise<Diary & { food: boolean[] }> {
+  async findByID(id: number, patientId): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
       where: { id },
       relations: ['patient'],
     });
 
+    if (!diary) {
+      throw new NotFoundException(`No diary entries found`);
+    }
+
+    if (patientId !== diary.patient.id) {
+      throw new NotFoundException(
+        "You are not authorized to access this patient's diary.",
+      );
+    }
+
     return this.transformDiary(diary);
   }
 
   async findOne(
-    patientId: number,
+    patientId: string,
     date: string,
   ): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
@@ -98,10 +106,19 @@ export class DiaryService {
     return this.transformDiary(diary); // Use the transformation function
   }
 
-  async update(id: number, updateDiaryDto: UpdateDiaryDto): Promise<Diary> {
+  async update(
+    id: number,
+    updateDiaryDto: UpdateDiaryDto,
+    patientId,
+  ): Promise<Diary> {
     const existingDiary = await this.diaryRepository.findOne({ where: { id } });
-    if (!existingDiary) {
+    if (!existingDiary || !existingDiary.patient) {
       throw new NotFoundException(`Diary with ID ${id} not found`);
+    }
+    if (patientId !== existingDiary.patient.id) {
+      throw new NotFoundException(
+        "You are not authorized to access this patient's diary.",
+      );
     }
 
     if (updateDiaryDto.patientId) {
@@ -125,8 +142,35 @@ export class DiaryService {
     return this.transformDiary(updatedDiary);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, patientId: string): Promise<void> {
+    // Fetch the diary entry to ensure it exists and belongs to the patient
+    const existingDiary = await this.diaryRepository.findOne({
+      where: { id },
+      relations: ['patient'],
+    });
+
+    if (!existingDiary || ! existingDiary.patient) {
+      throw new NotFoundException(`Diary with ID ${id} not found`);
+    }
+
+    if (existingDiary.patient.id !== patientId) {
+      throw new NotFoundException(
+        "You are not authorized to access this patient's diary.",
+      );
+    }
+
+    // List all images in the diary folder
+    const folderPath = `${id}/`;
+    const imagePaths = await this.minioClientService.listFiles(folderPath);
+
+    // Delete all images in the diary folder
+    for (const imagePath of imagePaths) {
+      await this.minioClientService.delete(imagePath, '');
+    }
+
+    // Proceed with deleting the diary entry
     const result = await this.diaryRepository.delete(id);
+
     if (result.affected === 0) {
       throw new NotFoundException(`Diary with ID ${id} not found`);
     }

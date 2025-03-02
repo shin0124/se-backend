@@ -8,21 +8,26 @@ import {
   UploadedFiles,
   HttpException,
   HttpStatus,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ImageService } from './image.service';
+import { JwtAuthGuard } from 'src/patientAuth/jwt-auth.guard';
 
 @Controller('images')
+@UseGuards(JwtAuthGuard)
 export class ImageController {
   private readonly logger = new Logger(ImageController.name);
 
   constructor(private readonly imageService: ImageService) {}
 
   @Post(':diaryId')
-  @UseInterceptors(FilesInterceptor('images')) // 'images' is the field name for file array
+  @UseInterceptors(FilesInterceptor('images'))
   async uploadImages(
     @Param('diaryId') diaryId: number,
     @UploadedFiles() files: (Express.Multer.File | string)[],
+    @Req() req: any,
   ) {
     console.log(files);
 
@@ -30,7 +35,11 @@ export class ImageController {
       throw new HttpException('No images uploaded', HttpStatus.BAD_REQUEST);
     }
 
-    const uploadedImages = await this.imageService.uploadImages(diaryId, files);
+    const uploadedImages = await this.imageService.uploadImages(
+      diaryId,
+      files,
+      req.user.id,
+    );
 
     return {
       message: 'Images uploaded successfully',
@@ -38,46 +47,9 @@ export class ImageController {
     };
   }
 
-  // @Post()
-  // @UseInterceptors(FileInterceptor('file'))
-  // async createImage(
-  //   @Body() createImageDto: CreateImageDto,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ) {
-  //   try {
-  //     const image = await this.imageService.createImage(createImageDto, file);
-  //     return image;
-  //   } catch (error) {
-  //     this.logger.error(error);
-  //     throw error;
-  //   }
-  // }
-
-  // @Patch(':id')
-  // async updateImage(
-  //   @Param('id') id: number,
-  //   @Body() updateImageDto: UpdateImageDto,
-  // ) {
-  //   try {
-  //     const image = await this.imageService.updateImage(id, updateImageDto);
-  //     return image;
-  //   } catch (error) {
-  //     this.logger.error(error);
-  //     throw error;
-  //   }
-  // }
-
-  // @Delete(':diaryId/:label/:imageId')
-  // async deleteImage(
-  //   @Param('diaryId') diaryId: number,
-  //   @Param('label') label: string,
-  //   @Param('imageId') imageId: number,
-  // ) {
-  //   return this.imageService.deleteImage(diaryId, label, imageId);
-  // }
-
   @Get(':diaryId')
-  async getImages(@Param('diaryId') diaryId: number) {
-    return this.imageService.getImages(diaryId);
+  getImages(@Param('diaryId') diaryId: number, @Req() req: any) {
+    const patientId = req.user.id;
+    return this.imageService.getImages(diaryId, patientId);
   }
 }

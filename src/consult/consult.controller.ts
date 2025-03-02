@@ -32,7 +32,7 @@ export class ConsultController {
   }
 
   @Get('patient/:patientId')
-  findByPatientId(@Param('patientId', ParseIntPipe) patientId: number) {
+  findByPatientId(@Param('patientId', ParseIntPipe) patientId: string) {
     return this.consultService.findByPatientId(patientId);
   }
 

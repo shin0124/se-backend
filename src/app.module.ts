@@ -13,6 +13,7 @@ import { PatientModule } from './patient/patient.module';
 import { ImageModule } from './image/image.module';
 import { EventModule } from './event/event.module';
 import 'dotenv/config';
+import { PatientAuthModule } from './patientAuth/patientAuth.module';
 
 console.log('Database Config:', {
   host: process.env.DB_HOST,
@@ -44,6 +45,7 @@ console.log('Database Config:', {
     ImageModule,
     ConsultModule,
     EventModule,
+    PatientAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

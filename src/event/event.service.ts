@@ -14,14 +14,10 @@ export class EventService {
     private patientsService: PatientService,
   ) {}
 
-  async create(createEventDto: CreateEventDto): Promise<Event> {
-    const patient = await this.patientsService.findOne(
-      createEventDto.patientId,
-    );
+  async create(createEventDto: CreateEventDto, patientId): Promise<Event> {
+    const patient = await this.patientsService.findOne(patientId);
     if (!patient) {
-      throw new NotFoundException(
-        `Patient with ID ${createEventDto.patientId} not found`,
-      );
+      throw new NotFoundException(`Patient with ID ${patientId} not found`);
     }
 
     const event = this.eventRepository.create({
@@ -32,13 +28,20 @@ export class EventService {
     return await this.eventRepository.save(event);
   }
 
-  async updateEvent(updateEventDto: UpdateEventDto): Promise<Event> {
+  async updateEvent(updateEventDto: UpdateEventDto, patientId): Promise<Event> {
     const existingEvent = await this.eventRepository.findOne({
       where: { id: updateEventDto.id },
+      relations: ['patient'],
     });
     if (!existingEvent) {
       throw new NotFoundException(
         `Event with ID ${updateEventDto.id} not found`,
+      );
+    }
+
+    if (patientId !== existingEvent.patient.id) {
+      throw new NotFoundException(
+        "You are not authorized to access this patient's event.",
       );
     }
 
@@ -58,7 +61,7 @@ export class EventService {
   }
 
   async getEventsByMonthAndPatientID(
-    patientId: number,
+    patientId: string,
     month: number,
     year: number,
   ): Promise<Event[]> {
@@ -75,13 +78,21 @@ export class EventService {
     });
   }
 
-  async removeByDateAndPatient(id: number): Promise<void> {
+  async removeByDateAndPatient(id: number, patientId): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id: id },
+      relations: ['patient'],
     });
     if (!event) {
       throw new NotFoundException(`Event id: ${id} is not found`);
     }
+
+    if (patientId !== event.patient.id) {
+      throw new NotFoundException(
+        "You are not authorized to access this patient's event.",
+      );
+    }
+
     await this.eventRepository.remove(event);
   }
 }

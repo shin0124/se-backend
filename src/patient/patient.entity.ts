@@ -6,16 +6,10 @@ import { Consult } from '../consult/consult.entity';
 @Entity()
 export class Patient {
   @PrimaryColumn()
-  id: number;
-
-  @Column({ nullable: true })
-  name: string;
-
-  @Column({ nullable: true })
-  age: number;
+  id: string;
 
   @Column({ nullable: false })
-  HN: number;
+  password: string;
 
   @OneToMany(() => Diary, (diary) => diary.patient)
   diaries: Diary[];
