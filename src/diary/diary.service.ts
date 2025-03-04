@@ -4,22 +4,22 @@ import { Repository } from 'typeorm';
 import { Diary } from './diary.entity';
 import { CreateDiaryDto } from './dto/create-diary.dto';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
-import { PatientService } from 'src/patient/patient.service';
 import { MinioClientService } from 'src/minio-client/minio-client.service';
+import { PatientService } from 'src/patient/patient.service';
 
 @Injectable()
 export class DiaryService {
   constructor(
     @InjectRepository(Diary)
     private diaryRepository: Repository<Diary>,
-    private patientsService: PatientService, // Inject Patient service
     private readonly minioClientService: MinioClientService,
+    private readonly patientService: PatientService,
   ) {}
 
   async create(createDiaryDto: CreateDiaryDto, patientId): Promise<Diary> {
     const existingDiary = await this.diaryRepository.findOne({
       where: {
-        patient: { id: patientId },
+        patientId,
         date: createDiaryDto.date,
       },
     });
@@ -30,18 +30,13 @@ export class DiaryService {
       );
     }
 
-    const patient = await this.patientsService.findOne(patientId);
-    if (!patient) {
-      throw new NotFoundException(`Patient with ID ${patientId} not found`);
-    }
-
     // Convert food array to individual boolean fields
     const foodItems = createDiaryDto.food || [];
     const foodBooleans = this.mapFoodArrayToBooleans(foodItems);
 
     const diary = this.diaryRepository.create({
       ...createDiaryDto,
-      patient: patient,
+      patientId,
       ...foodBooleans, // Spread food boolean properties
     });
 
@@ -50,31 +45,41 @@ export class DiaryService {
   }
 
   async findAll(): Promise<Array<Diary & { food: boolean[] }>> {
-    const diaries = await this.diaryRepository.find({
-      relations: ['patient'],
-    });
+    const diaries = await this.diaryRepository.find();
     return diaries.map(this.transformDiary.bind(this));
   }
-
   async findByDate(date: string): Promise<Array<Diary & { food: boolean[] }>> {
     const diaries = await this.diaryRepository.find({
       where: { date },
-      relations: ['patient'],
     });
 
     if (!diaries || diaries.length === 0) {
       throw new NotFoundException(`No diary entries found for date ${date}`);
     }
 
-    return diaries.map((diary) => this.transformDiary(diary)); // Ensure mapping is correct
+    const diariesWithPatientName = await Promise.all(
+      diaries.map(async (diary) => {
+        const patient = await this.patientService.findOneByCitizenID(
+          diary.patientId,
+        );
+
+        const patientName = patient.name;
+
+        return {
+          ...diary,
+          patientName,
+        };
+      }),
+    );
+
+    return diariesWithPatientName.map((diary) => this.transformDiary(diary));
   }
 
   async findByPatientId(
-    patientId: number,
+    patientId: string,
   ): Promise<Array<Diary & { food: boolean[] }>> {
     const diaries = await this.diaryRepository.find({
-      where: { patient: { id: patientId } },
-      relations: ['patient'],
+      where: { patientId },
     });
 
     if (!diaries || diaries.length === 0) {
@@ -83,13 +88,31 @@ export class DiaryService {
       );
     }
 
-    return diaries.map(this.transformDiary.bind(this));
+    const diariesWithPatientName = await Promise.all(
+      diaries.map(async (diary) => {
+        const patient = await this.patientService.findOneByCitizenID(
+          diary.patientId,
+        );
+
+        const patientName = patient.name;
+        const patientAge = patient.age;
+        const patientHN = patient.HN;
+
+        return {
+          ...diary,
+          patientName,
+          patientAge,
+          patientHN,
+        };
+      }),
+    );
+
+    return diariesWithPatientName.map(this.transformDiary.bind(this));
   }
 
-  async findByDiaryId(id: number): Promise<Diary & { food: boolean[] }> {
+  async findById(id: number): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
       where: { id },
-      relations: ['patient'],
     });
 
     if (!diary) {
@@ -104,8 +127,7 @@ export class DiaryService {
     date: string,
   ): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
-      where: { patient: { id: patientId }, date },
-      relations: ['patient'],
+      where: { patientId, date },
     });
 
     if (!diary) {
@@ -123,19 +145,6 @@ export class DiaryService {
       throw new NotFoundException(`Diary with ID ${id} not found`);
     }
 
-    if (updateDiaryDto.patientId) {
-      const patient = await this.patientsService.findOne(
-        updateDiaryDto.patientId,
-      );
-      if (!patient) {
-        throw new NotFoundException(
-          `Patient with ID ${updateDiaryDto.patientId} not found`,
-        );
-      }
-      existingDiary.patient = patient;
-    }
-
-    // Convert food array to individual boolean fields
     const foodItems = updateDiaryDto.food || [];
     const foodBooleans = this.mapFoodArrayToBooleans(foodItems);
 
@@ -148,7 +157,6 @@ export class DiaryService {
     // Fetch the diary entry to ensure it exists and belongs to the patient
     const existingDiary = await this.diaryRepository.findOne({
       where: { id },
-      relations: ['patient'],
     });
 
     if (!existingDiary) {

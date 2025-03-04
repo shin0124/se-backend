@@ -1,16 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+// import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
-export class Chat {
-  @PrimaryGeneratedColumn()
-  id: number;
+// @Entity()
+// export class Chat {
+//   @PrimaryGeneratedColumn()
+//   id: number;
 
-  @Column()
-  title: string;
+//   @Column()
+//   title: string;
 
-  @Column()
-  description: string;
+//   @Column()
+//   description: string;
 
-  @Column({ default: false })
-  pinned: boolean;
-}
+//   @Column({ default: false })
+//   pinned: boolean;
+// }

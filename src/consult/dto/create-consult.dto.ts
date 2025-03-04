@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class CreateConsultDto {
   @IsNumber()
   @IsNotEmpty()
-  patientId: number;
+  patientId: string;
 
   @IsString()
   @IsNotEmpty()

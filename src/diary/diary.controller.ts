@@ -42,18 +42,14 @@ export class DiaryController {
 
   @Get('details/:diaryId')
   @UseGuards(DiaryGuard)
-  findByID(@Param('diaryId', ParseIntPipe) diaryId: number): Promise<Diary> {
-    return this.diaryService.findByID(diaryId);
-//   @Get('by-diary/:id')
-//   findByDiaryId(@Param('id') id: number): Promise<Diary & { food: boolean[] }> {
-//     return this.diaryService.findByDiaryId(id);
-//   }
+  findById(@Param('diaryId', ParseIntPipe) diaryId: number): Promise<Diary> {
+    return this.diaryService.findById(diaryId);
+  }
 
-//   @Get('by-patient/:id')
-//   findByPatientId(
-//     @Param('id') id: number,
-//   ): Promise<(Diary & { food: boolean[] })[]> {
-//     return this.diaryService.findByPatientId(id);
+  @Get('by-patient')
+  @UseGuards(PatientRoleGuard)
+  findByPatientId(@Req() req: any): Promise<(Diary & { food: boolean[] })[]> {
+    return this.diaryService.findByPatientId(req.user.id);
   }
 
   @Get('by-date/:date')

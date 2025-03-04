@@ -1,38 +1,39 @@
-import {
-  Controller,
-  Request,
-  Post,
-  UseGuards,
-  Body,
-  Get,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { DoctorAuthService } from './doctorAuth.service';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { RegisterDto } from './register.dto';
+import {
+  ChangePasswordDto,
+  LoginDoctorDto,
+  RegisterDoctorDto,
+  SendOtpDto,
+  VerifyOtpDto,
+} from './doctor.dto';
 
 @Controller('doctorAuth')
 export class DoctorAuthController {
   constructor(private doctorAuthService: DoctorAuthService) {}
 
   @Post('login')
-  async login(@Body() body: RegisterDto) {
-    return this.doctorAuthService.login(body.email, body.password);
+  async login(@Body() body: LoginDoctorDto) {
+    return this.doctorAuthService.login(body);
   }
 
   @Post('register')
-  async register(@Body() body: RegisterDto) {
-    return this.doctorAuthService.register(body.email, body.password);
+  async register(@Body() body: RegisterDoctorDto) {
+    return this.doctorAuthService.register(body);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  @Post('sendOTP')
+  sendOtp(@Body() data: SendOtpDto) {
+    return this.doctorAuthService.sendOtp(data);
   }
 
-  @Get('user/:id')
-  async findOne(@Param('id') id: string) {
-    return this.doctorAuthService.findOne(id);
+  @Post('verifyOTP')
+  verifyOtp(@Body() data: VerifyOtpDto) {
+    return this.doctorAuthService.verifyOtp(data);
+  }
+
+  @Post('changepassword')
+  changePassword(@Body() data: ChangePasswordDto) {
+    return this.doctorAuthService.changePassword(data);
   }
 }

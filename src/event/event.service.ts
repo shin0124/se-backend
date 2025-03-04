@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { Event } from './event.entity';
-import { PatientService } from 'src/patient/patient.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
@@ -11,44 +10,44 @@ export class EventService {
   constructor(
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
-    private patientsService: PatientService,
   ) {}
 
-  async create(createEventDto: CreateEventDto, patientId): Promise<Event> {
-    const patient = await this.patientsService.findOne(patientId);
-    if (!patient) {
-      throw new NotFoundException(`Patient with ID ${patientId} not found`);
-    }
-
+  async create(
+    createEventDto: CreateEventDto,
+    patientId: string,
+  ): Promise<Event> {
     const event = this.eventRepository.create({
       ...createEventDto,
-      patient: patient,
+      patientId: patientId, // Store patientId instead of relation
     });
 
     return await this.eventRepository.save(event);
   }
 
-  async updateEvent(updateEventDto: UpdateEventDto, id): Promise<Event> {
+  async updateEvent(
+    updateEventDto: UpdateEventDto,
+    id: number,
+  ): Promise<Event> {
     const existingEvent = await this.eventRepository.findOne({
       where: { id },
-      relations: ['patient'],
     });
     if (!existingEvent) {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
 
     existingEvent.event = updateEventDto.event;
-
     return this.eventRepository.save(existingEvent);
   }
 
-  async findOne(eventId: number): Promise<Event> {
+  async findOne(eventId: number): Promise<any> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
     });
+
     if (!event) {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
     }
+
     return event;
   }
 
@@ -59,9 +58,10 @@ export class EventService {
   ): Promise<Event[]> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
+
     return this.eventRepository.find({
       where: {
-        patient: { id: patientId },
+        patientId: patientId, // Use patientId directly
         date: Between(
           startDate.toISOString().split('T')[0],
           endDate.toISOString().split('T')[0],
@@ -73,10 +73,10 @@ export class EventService {
   async removeByDateAndPatient(id: number): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id: id },
-      relations: ['patient'],
     });
+
     if (!event) {
-      throw new NotFoundException(`Event id: ${id} is not found`);
+      throw new NotFoundException(`Event ID: ${id} is not found`);
     }
 
     await this.eventRepository.remove(event);

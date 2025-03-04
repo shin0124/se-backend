@@ -1,63 +1,74 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { Patient } from 'src/patient/patient.entity';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class PatientAuthService {
+  private readonly baseUrl = process.env.CLINIC_API_URL + '/patients';
+
   constructor(
-    @InjectRepository(Patient)
-    private patientsRepository: Repository<Patient>,
+    private httpService: HttpService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
 
-  async validatePatient(id: string, pass: string): Promise<any> {
-    const patient = await this.patientsRepository.findOne({
-      where: { id },
-    });
-    if (patient && (await bcrypt.compare(pass, patient.password))) {
-      const { password, ...result } = patient;
-      void password;
-      return result;
+  async validatePatient(citizenID: string, pass: string): Promise<any> {
+    try {
+      const { data: patient } = await firstValueFrom(
+        this.httpService.get(`${this.baseUrl}?citizenID=${citizenID}`),
+      );
+
+      if (patient && (await bcrypt.compare(pass, patient.password))) {
+        return patient;
+      }
+    } catch (error) {
+      console.error('Error validating patient:', error.message);
     }
     return null;
   }
 
-  async login(id: string, pass: string) {
-    const payload = { patientid: id, sub: pass, userrole: 'patient' };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
-  }
+  async login(body: LoginDto) {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.post(`${this.baseUrl}/login`, body),
+      );
 
-  async register(id: string, pass: string) {
-    const existingPatient = await this.patientsRepository.findOne({
-      where: { id },
-    });
+      const payload = {
+        patientid: data.patient.citizenID,
+        sub: data.patient.password,
+        userrole: 'patient',
+      };
 
-    if (existingPatient) {
-      throw new Error('Username already taken');
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      };
+    } catch (error) {
+      throw new Error('Invalid credentials: ' + error);
     }
-
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(pass, saltRounds);
-    const patient = this.patientsRepository.create({
-      id,
-      password: hashedPassword,
-    });
-    this.patientsRepository.save(patient);
-    const payload = { patientid: id, sub: pass, userrole: 'patient' };
-
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
   }
 
-  async findOne(id: string): Promise<Patient | undefined> {
-    return this.patientsRepository.findOne({ where: { id } });
+  async register(body: RegisterDto) {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.post(`${this.baseUrl}`, body), // Use the new object
+      );
+
+      const payload = {
+        patientid: data.patient.citizenID,
+        sub: data.patient.password,
+        userrole: 'patient',
+      };
+
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      };
+    } catch (error) {
+      throw new Error('Registration failed: ' + error);
+    }
   }
 }

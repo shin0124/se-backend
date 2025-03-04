@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Body,
-  Patch,
-  Delete,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Body, Patch, UseGuards, Req } from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
@@ -29,7 +21,7 @@ export class PatientController {
   @Get('profile') // Changed path to 'profile'
   @UseGuards(PatientRoleGuard)
   findOne(@Req() req: any) {
-    return this.patientService.findOne(req.user.id); // Use logged-in user's ID
+    return this.patientService.findOneByCitizenID(req.user.id); // Use logged-in user's ID
   }
 
   // Update the patient's profile (for logged-in user)
@@ -40,12 +32,5 @@ export class PatientController {
     @Req() req: any, // Access logged-in user context
   ) {
     return this.patientService.update(req.user.id, updatePatientDto); // Pass user ID
-  }
-
-  // Delete the patient's profile (for logged-in user)
-  @Delete('delete') // Changed path to 'delete'
-  @UseGuards(PatientRoleGuard)
-  remove(@Req() req: any) {
-    return this.patientService.remove(req.user.id); // Pass user ID
   }
 }

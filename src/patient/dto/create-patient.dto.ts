@@ -2,12 +2,17 @@ import {
   IsString,
   IsNotEmpty,
   Length,
+  IsEnum,
   IsInt,
   Min,
-  IsEnum,
 } from 'class-validator';
 
-export class UpdatePatientDto {
+export class CreatePatientDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(13, 13)
+  citizenID: string;
+
   @IsString()
   @IsNotEmpty()
   @Length(6, 10)

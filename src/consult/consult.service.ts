@@ -18,22 +18,20 @@ export class ConsultService {
   }
 
   async findAll(): Promise<Consult[]> {
-    return this.consultRepository.find({ relations: ['patient'] }); // Eager load patient
+    return this.consultRepository.find(); // Eager load patient
   }
 
   async findOne(id: number): Promise<Consult | undefined> {
     return this.consultRepository.findOne({
       where: { id },
-      relations: ['patient'],
     }); // Eager load patient
   }
 
   async findByPatientId(patientId: string): Promise<Consult[]> {
     return this.consultRepository.find({
       where: {
-        patient: { id: patientId },
+        patientId,
       },
-      relations: ['patient'],
     });
   }
 

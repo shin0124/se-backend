@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Consult } from './consult/consult.entity';
 import { Diary } from './diary/diary.entity';
-import { Patient } from './patient/patient.entity';
 import { Event } from './event/event.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,8 +14,10 @@ import { EventModule } from './event/event.module';
 import 'dotenv/config';
 import { PatientAuthModule } from './patientAuth/patientAuth.module';
 import { DoctorAuthModule } from './doctorAuth/doctorAuth.module';
-import { DoctorModule } from './doctor/doctor.module';
-import { Doctor } from './doctor/doctor.entity';
+import { Patient } from './patient copy/patient.entity';
+import { PatientModule as PatientModule2 } from './patient copy/patient.module';
+import { Doctor } from './doctor copy/doctor.entity';
+import { DoctorModule } from './doctor copy/doctor.module';
 
 console.log('Database Config:', {
   host: process.env.DB_HOST,
@@ -51,6 +52,7 @@ console.log('Database Config:', {
     DoctorModule,
     PatientAuthModule,
     DoctorAuthModule,
+    PatientModule2,
   ],
   controllers: [AppController],
   providers: [AppService],
