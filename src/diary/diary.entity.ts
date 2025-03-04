@@ -1,20 +1,12 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
-import { Patient } from '../patient/patient.entity'; // Import Patient
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Diary {
   @PrimaryGeneratedColumn() // Use a generated ID as the primary key
   id: number;
 
-  @ManyToOne(() => Patient, (patient) => patient.diaries) // ManyToOne to Patient
-  @JoinColumn({ name: 'patientId' }) // Specify the foreign key column name
-  patient: Patient;
+  @Column({ nullable: false })
+  patientId: string;
 
   @Column({ type: 'date' })
   date: string;

@@ -14,7 +14,6 @@ export class ImageService {
   async uploadImages(diaryId: number, files: (Express.Multer.File | string)[]) {
     const diary = await this.diaryRepository.findOne({
       where: { id: diaryId },
-      relations: ['patient'],
     });
 
     if (!diary) {
@@ -47,7 +46,6 @@ export class ImageService {
     try {
       const diary = await this.diaryRepository.findOne({
         where: { id: diaryId },
-        relations: ['patient'],
       });
 
       if (!diary) {

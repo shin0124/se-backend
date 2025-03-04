@@ -29,8 +29,8 @@ export class DiaryGuard implements CanActivate {
 
     // Allow patients only if they are accessing their own diary
     if (user.role === 'patient') {
-      const diary = await this.diaryService.findByID(diaryId);
-      if (diary && diary.patient.id === user.id) {
+      const diary = await this.diaryService.findById(diaryId);
+      if (diary && diary.patientId === user.id) {
         return true;
       }
     }

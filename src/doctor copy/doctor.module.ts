@@ -3,10 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Doctor } from './doctor.entity';
 import { DoctorService } from './doctor.service';
 import { DoctorController } from './doctor.controller';
-import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Doctor]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Doctor])],
   providers: [DoctorService],
   controllers: [DoctorController],
   exports: [DoctorService],

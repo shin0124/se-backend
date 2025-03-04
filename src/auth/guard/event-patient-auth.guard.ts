@@ -25,7 +25,7 @@ export class PatientOwnEventGuard implements CanActivate {
     // Allow patients only if they are accessing their own event
     if (user.role === 'patient') {
       const event = await this.eventService.findOne(eventId);
-      if (event && event.patient.id === user.id) {
+      if (event && event.patientId === user.id) {
         return true;
       }
     }

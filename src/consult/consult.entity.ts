@@ -1,13 +1,12 @@
-import { Patient } from '../patient/patient.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Consult {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Patient, (patient) => patient.consults)
-  patient: Patient;
+  @Column({ nullable: false })
+  patientId: string;
 
   @Column()
   consultId: number;
