@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Diary } from './diary.entity';
 import { CreateDiaryDto } from './dto/create-diary.dto';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
@@ -110,6 +110,25 @@ export class DiaryService {
     return diariesWithPatientName.map(this.transformDiary.bind(this));
   }
 
+  async getDiariesByMonthAndPatientID(
+    patientId: string,
+    month: number,
+    year: number,
+  ): Promise<Diary[]> {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    return this.diaryRepository.find({
+      where: {
+        patientId: patientId, // Use patientId directly
+        date: Between(
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0],
+        ),
+      },
+    });
+  }
+
   async findById(id: number): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
       where: { id },
@@ -180,6 +199,54 @@ export class DiaryService {
     }
   }
 
+  async getAllTimeMonthlyAveragePainScores(
+    patientId: string,
+  ): Promise<{ month: string; averagePain: number }[]> {
+    const monthlyAveragePainScores = [];
+
+    // Loop through each month (0-11 represents Jan-Dec)
+    const currentYear = new Date().getFullYear(); // Get the current year
+
+    for (let month = 0; month < 12; month++) {
+      const startDate = new Date(currentYear, month, 1); // Start from the first day of the month
+      const endDate = new Date(currentYear, month + 1, 0); // Get the last day of the month
+
+      const formattedStartDate = this.formatDate(startDate);
+      const formattedEndDate = this.formatDate(endDate);
+
+      const diaries = await this.diaryRepository.find({
+        where: {
+          patientId: patientId,
+          date: Between(formattedStartDate, formattedEndDate),
+        },
+      });
+
+      // Calculate the average pain score for the month
+      if (diaries.length > 0) {
+        const totalPainScore = diaries.reduce(
+          (total, diary) => total + diary.painScore,
+          0,
+        );
+        const averagePain = (totalPainScore * 10) / diaries.length;
+        monthlyAveragePainScores.push({
+          month: new Date(0, month).toLocaleString('default', {
+            month: 'long',
+          }),
+          averagePain,
+        });
+      } else {
+        monthlyAveragePainScores.push({
+          month: new Date(0, month).toLocaleString('default', {
+            month: 'long',
+          }),
+          averagePain: 0,
+        });
+      }
+    }
+
+    return monthlyAveragePainScores;
+  }
+
   private mapFoodArrayToBooleans(foodArray: boolean[]): Partial<Diary> {
     const foodKeys: (keyof Diary)[] = [
       'tea',
@@ -247,5 +314,12 @@ export class DiaryService {
       ...diary,
       food: this.mapBooleansToFoodArray(diary), // Add food array
     } as Diary & { food: boolean[] }; // Explicitly define return type
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month (0-indexed)
+    const day = String(date.getDate()).padStart(2, '0'); // Get day
+    return `${year}-${month}-${day}`;
   }
 }

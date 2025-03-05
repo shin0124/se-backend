@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { Diary } from './diary.entity';
@@ -58,6 +59,20 @@ export class DiaryController {
     return this.diaryService.findByDate(date);
   }
 
+  @Get('by-month')
+  @UseGuards(PatientRoleGuard)
+  async getEventsByMonthAndPatientID(
+    @Query('month') month: number,
+    @Query('year') year: number,
+    @Req() req: any,
+  ): Promise<Diary[]> {
+    return this.diaryService.getDiariesByMonthAndPatientID(
+      req.user.id,
+      month,
+      year,
+    );
+  }
+
   @Get('entry/:date')
   @UseGuards(PatientRoleGuard)
   findOne(@Param('date') date: string, @Req() req: any): Promise<Diary> {
@@ -79,5 +94,14 @@ export class DiaryController {
   @UseGuards(PatientOwnDiaryGuard)
   remove(@Param('diaryId', ParseIntPipe) diaryId: number): Promise<void> {
     return this.diaryService.remove(diaryId);
+  }
+
+  @Get('pain-data')
+  @UseGuards(PatientRoleGuard)
+  async getMonthlyAveragePainScores(
+    @Req() req: any,
+  ): Promise<{ month: string; averagePain: number }[]> {
+    const patientId = req.user.id;
+    return this.diaryService.getAllTimeMonthlyAveragePainScores(patientId);
   }
 }
