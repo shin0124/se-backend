@@ -139,7 +139,11 @@ export class DiaryService {
     });
   }
 
-  async findById(id: number): Promise<Diary & { food: boolean[] }> {
+  async findById(
+    id: number,
+    citizenID: string,
+    role: string,
+  ): Promise<Diary & { food: boolean[] }> {
     const diary = await this.diaryRepository.findOne({
       where: { id },
     });

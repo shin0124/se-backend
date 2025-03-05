@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Headers,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { Diary } from './diary.entity';
@@ -94,14 +95,21 @@ export class DiaryController {
   }
 
   @Get('by-month')
-  @UseGuards(PatientRoleGuard)
   async getEventsByMonthAndPatientID(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
     @Query('month') month: number,
     @Query('year') year: number,
-    @Req() req: any,
   ): Promise<Diary[]> {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
     return this.diaryService.getDiariesByMonthAndPatientID(
-      req.user.id,
+      citizenID,
       month,
       year,
     );
@@ -157,11 +165,18 @@ export class DiaryController {
   }
 
   @Get('pain-data')
-  @UseGuards(PatientRoleGuard)
   async getMonthlyAveragePainScores(
-    @Req() req: any,
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
   ): Promise<{ month: string; averagePain: number }[]> {
-    const patientId = req.user.id;
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const patientId = citizenID;
     return this.diaryService.getAllTimeMonthlyAveragePainScores(patientId);
   }
 }
