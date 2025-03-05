@@ -8,10 +8,6 @@ import {
 } from 'class-validator';
 
 export class UpdateDiaryDto {
-  @IsInt()
-  @IsNotEmpty()
-  patientId?: string;
-
   @IsDateString()
   @IsOptional()
   date?: string;

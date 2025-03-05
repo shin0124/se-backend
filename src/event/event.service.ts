@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { Event } from './event.entity';
@@ -27,25 +31,35 @@ export class EventService {
   async updateEvent(
     updateEventDto: UpdateEventDto,
     id: number,
+    patientId: string,
   ): Promise<Event> {
     const existingEvent = await this.eventRepository.findOne({
       where: { id },
     });
+
     if (!existingEvent) {
       throw new NotFoundException(`Event with ID ${id} not found`);
+    }
+
+    if (existingEvent.patientId !== patientId) {
+      throw new ForbiddenException('Access denied');
     }
 
     existingEvent.event = updateEventDto.event;
     return this.eventRepository.save(existingEvent);
   }
 
-  async findOne(eventId: number): Promise<any> {
+  async findOne(eventId: number, patientId: string): Promise<any> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
     });
 
     if (!event) {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
+
+    if (event.patientId !== patientId) {
+      throw new ForbiddenException('Access denied');
     }
 
     return event;
@@ -61,7 +75,7 @@ export class EventService {
 
     return this.eventRepository.find({
       where: {
-        patientId: patientId, // Use patientId directly
+        patientId, // Use patientId directly
         date: Between(
           startDate.toISOString().split('T')[0],
           endDate.toISOString().split('T')[0],
@@ -70,13 +84,17 @@ export class EventService {
     });
   }
 
-  async removeByDateAndPatient(id: number): Promise<void> {
+  async removeByDateAndPatient(id: number, patientId: string): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id: id },
     });
 
     if (!event) {
       throw new NotFoundException(`Event ID: ${id} is not found`);
+    }
+
+    if (event.patientId !== patientId) {
+      throw new ForbiddenException('Access denied');
     }
 
     await this.eventRepository.remove(event);

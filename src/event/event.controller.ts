@@ -7,57 +7,89 @@ import {
   Put,
   Delete,
   Query,
-  UseGuards,
-  Req,
+  Headers,
+  ForbiddenException,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './event.entity';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { PatientRoleGuard } from 'src/auth/guard/patient-auth.guard';
-import { PatientOwnEventGuard } from 'src/auth/guard/event-patient-auth.guard';
+import { EncryptionService } from 'src/encryption/encryption.service';
 
 @Controller('events')
-@UseGuards(JwtAuthGuard)
 export class EventController {
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    private readonly eventService: EventService,
+    private readonly encryptionService: EncryptionService,
+  ) {}
 
   @Post()
-  @UseGuards(PatientRoleGuard)
   async create(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
     @Body() createEventDto: CreateEventDto,
-    @Req() req: any,
   ): Promise<Event> {
-    return this.eventService.create(createEventDto, req.user.id);
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.eventService.create(createEventDto, citizenID);
   }
 
   @Put(':eventId')
-  @UseGuards(PatientOwnEventGuard)
   async update(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
     @Param('eventId') eventId: number,
     @Body() updateEventDto: UpdateEventDto,
   ): Promise<Event> {
-    return this.eventService.updateEvent(updateEventDto, eventId);
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.eventService.updateEvent(updateEventDto, eventId, citizenID);
   }
 
   @Get()
-  @UseGuards(PatientRoleGuard)
   async getEventsByMonthAndPatientID(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
     @Query('month') month: number,
     @Query('year') year: number,
-    @Req() req: any,
   ): Promise<Event[]> {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
     return this.eventService.getEventsByMonthAndPatientID(
-      req.user.id,
+      citizenID,
       month,
       year,
     );
   }
 
   @Delete(':eventId')
-  @UseGuards(PatientOwnEventGuard)
-  async remove(@Param('eventId') eventId: number): Promise<void> {
-    return this.eventService.removeByDateAndPatient(eventId);
+  async remove(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
+    @Param('eventId') eventId: number,
+  ): Promise<void> {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.eventService.removeByDateAndPatient(eventId, citizenID);
   }
 }

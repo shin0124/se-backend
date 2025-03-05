@@ -7,77 +7,138 @@ import {
   Param,
   Delete,
   ParseIntPipe,
-  Req,
-  UseGuards,
+  Headers,
+  ForbiddenException,
 } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { Diary } from './diary.entity';
 import { CreateDiaryDto } from './dto/create-diary.dto';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { DoctorRoleGuard } from 'src/auth/guard/doctor-auth.guard';
-import { DiaryGuard } from 'src/auth/guard/diary-auth.guard';
-import { PatientOwnDiaryGuard } from 'src/auth/guard/diary-patient-auth.guard';
-import { PatientRoleGuard } from 'src/auth/guard/patient-auth.guard';
+import { EncryptionService } from 'src/encryption/encryption.service';
 
 @Controller('diaries')
-@UseGuards(JwtAuthGuard)
 export class DiaryController {
-  constructor(private readonly diaryService: DiaryService) {}
+  constructor(
+    private readonly diaryService: DiaryService,
+    private readonly encryptionService: EncryptionService,
+  ) {}
 
   @Post('create')
-  @UseGuards(PatientRoleGuard)
   create(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
     @Body() createDiaryDto: CreateDiaryDto,
-    @Req() req: any,
   ): Promise<Diary> {
-    return this.diaryService.create(createDiaryDto, req.user.id);
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.diaryService.create(createDiaryDto, citizenID);
   }
 
   @Get('all')
-  @UseGuards(DoctorRoleGuard)
-  findAll(): Promise<Diary[]> {
+  findAll(@Headers('X-Role') encryptedRole: string): Promise<Diary[]> {
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'doctor') {
+      throw new ForbiddenException('Access denied');
+    }
+
     return this.diaryService.findAll();
   }
 
   @Get('details/:diaryId')
-  @UseGuards(DiaryGuard)
-  findById(@Param('diaryId', ParseIntPipe) diaryId: number): Promise<Diary> {
-    return this.diaryService.findById(diaryId);
+  findById(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
+    @Param('diaryId', ParseIntPipe) diaryId: number,
+  ): Promise<Diary> {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    return this.diaryService.findById(diaryId, citizenID, role);
   }
 
   @Get('by-patient')
-  @UseGuards(PatientRoleGuard)
-  findByPatientId(@Req() req: any): Promise<(Diary & { food: boolean[] })[]> {
-    return this.diaryService.findByPatientId(req.user.id);
+  findByPatientId(
+    @Headers('X-Token') token: string,
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
+  ): Promise<(Diary & { food: boolean[] })[]> {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.diaryService.findByPatientId(citizenID, token);
   }
 
   @Get('by-date/:date')
-  @UseGuards(DoctorRoleGuard)
-  findByDate(@Param('date') date: string): Promise<Diary[]> {
-    return this.diaryService.findByDate(date);
+  findByDate(
+    @Headers('X-Role') encryptedRole: string,
+    @Headers('X-Token') token: string,
+    @Param('date') date: string,
+  ): Promise<Diary[]> {
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'doctor') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.diaryService.findByDate(date, token);
   }
 
   @Get('entry/:date')
-  @UseGuards(PatientRoleGuard)
-  findOne(@Param('date') date: string, @Req() req: any): Promise<Diary> {
-    return this.diaryService.findOne(req.user.id, date);
+  findOne(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
+    @Param('date') date: string,
+  ): Promise<Diary> {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.diaryService.findOne(citizenID, date);
   }
 
   @Patch('update/:diaryId')
-  @UseGuards(PatientOwnDiaryGuard)
   update(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
     @Param('diaryId', ParseIntPipe) diaryId: number,
     @Body() updateDiaryDto: UpdateDiaryDto,
-    @Req() req: any,
   ): Promise<Diary> {
-    updateDiaryDto.patientId = req.user.id;
-    return this.diaryService.update(diaryId, updateDiaryDto);
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.diaryService.update(diaryId, updateDiaryDto, citizenID);
   }
 
   @Delete('delete/:diaryId')
-  @UseGuards(PatientOwnDiaryGuard)
-  remove(@Param('diaryId', ParseIntPipe) diaryId: number): Promise<void> {
-    return this.diaryService.remove(diaryId);
+  remove(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
+    @Param('diaryId', ParseIntPipe) diaryId: number,
+  ): Promise<void> {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.diaryService.remove(diaryId, citizenID);
   }
 }
