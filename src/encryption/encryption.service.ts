@@ -8,7 +8,7 @@ export class EncryptionService {
   private readonly decryptionKey: string;
 
   constructor(private configService: ConfigService) {
-    this.decryptionKey = this.configService.get<string>('DECRYPT_KEY');
+    this.decryptionKey = process.env.DECRYPT_KEY;
 
     if (!this.decryptionKey) {
       throw new Error('DECRYPT_KEY is not set in environment variables');
