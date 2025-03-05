@@ -1,4 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  ForbiddenException,
+} from '@nestjs/common';
 import { MinioClientService } from '../minio-client/minio-client.service';
 import { DiaryRepository } from '../diary/diary.repository';
 import { AppMimeType, BufferedFile } from 'src/minio-client/file.model';
@@ -11,13 +16,21 @@ export class ImageService {
     private readonly diaryRepository: DiaryRepository,
   ) {}
 
-  async uploadImages(diaryId: number, files: (Express.Multer.File | string)[]) {
+  async uploadImages(
+    diaryId: number,
+    files: (Express.Multer.File | string)[],
+    citizenID: string,
+  ) {
     const diary = await this.diaryRepository.findOne({
       where: { id: diaryId },
     });
 
     if (!diary) {
       throw new HttpException('Diary not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (diary.patientId !== citizenID) {
+      throw new ForbiddenException('Access denied');
     }
 
     for (const file of files) {
@@ -42,7 +55,7 @@ export class ImageService {
     }
   }
 
-  async getImages(diaryId: number) {
+  async getImages(diaryId: number, citizenID: string, role: string) {
     try {
       const diary = await this.diaryRepository.findOne({
         where: { id: diaryId },
@@ -50,6 +63,10 @@ export class ImageService {
 
       if (!diary) {
         throw new HttpException('Diary not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (role !== 'doctor' && diary.patientId !== citizenID) {
+        throw new ForbiddenException('Access denied');
       }
 
       const paths = await this.minioClientService.listFiles(`${diaryId}/`);

@@ -7,7 +7,7 @@ import { Diary } from './diary.entity';
 import { PatientModule } from '../patient/patient.module';
 import { ImageModule } from 'src/image/image.module';
 import { MinioClientModule } from 'src/minio-client/minio-client.module';
-import { AuthModule } from 'src/auth/auth.module';
+import { EncryptionService } from 'src/encryption/encryption.service';
 
 @Module({
   imports: [
@@ -15,10 +15,9 @@ import { AuthModule } from 'src/auth/auth.module';
     PatientModule,
     forwardRef(() => ImageModule),
     MinioClientModule,
-    AuthModule,
   ],
   controllers: [DiaryController],
-  providers: [DiaryService],
+  providers: [DiaryService, EncryptionService],
   exports: [DiaryService],
 })
 export class DiaryModule {}

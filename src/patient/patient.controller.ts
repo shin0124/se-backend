@@ -1,36 +1,66 @@
-import { Controller, Get, Body, Patch, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Headers,
+  Body,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { DoctorRoleGuard } from 'src/auth/guard/doctor-auth.guard';
-import { PatientRoleGuard } from 'src/auth/guard/patient-auth.guard';
+import { EncryptionService } from 'src/encryption/encryption.service';
 
-@Controller('patients') // Renamed path to 'user/patients'
-@UseGuards(JwtAuthGuard) // Ensure routes are protected by JWT
+@Controller('patients')
 export class PatientController {
-  constructor(private readonly patientService: PatientService) {}
+  constructor(
+    private readonly patientService: PatientService,
+    private readonly encryptionService: EncryptionService,
+  ) {}
 
-  // Get all patients for the logged-in user
   @Get()
-  @UseGuards(DoctorRoleGuard)
-  findAll() {
-    return this.patientService.findAll(); // Pass the user ID to service
-  }
-
-  // Get a single patient for the logged-in user
-  @Get('profile') // Changed path to 'profile'
-  @UseGuards(PatientRoleGuard)
-  findOne(@Req() req: any) {
-    return this.patientService.findOneByCitizenID(req.user.id); // Use logged-in user's ID
-  }
-
-  // Update the patient's profile (for logged-in user)
-  @Patch('update') // Changed path to 'update'
-  @UseGuards(PatientRoleGuard)
-  update(
-    @Body() updatePatientDto: UpdatePatientDto,
-    @Req() req: any, // Access logged-in user context
+  findAll(
+    @Headers('X-Role') encryptedRole: string,
+    @Headers('X-Token') token: string,
   ) {
-    return this.patientService.update(req.user.id, updatePatientDto); // Pass user ID
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'doctor') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.patientService.findAll(token);
+  }
+
+  @Get('profile')
+  findOne(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
+    @Headers('X-Token') token: string,
+  ) {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.patientService.findOneByCitizenID(citizenID, token);
+  }
+
+  @Patch('update')
+  update(
+    @Headers('X-Citizen-ID') encryptedCitizenID: string,
+    @Headers('X-Role') encryptedRole: string,
+    @Headers('X-Token') token: string,
+    @Body() updatePatientDto: UpdatePatientDto,
+  ) {
+    const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
+    const role = this.encryptionService.decryptValue(encryptedRole);
+
+    if (role !== 'patient') {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.patientService.update(citizenID, updatePatientDto, token);
   }
 }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { Diary } from './diary.entity';
@@ -48,7 +52,10 @@ export class DiaryService {
     const diaries = await this.diaryRepository.find();
     return diaries.map(this.transformDiary.bind(this));
   }
-  async findByDate(date: string): Promise<Array<Diary & { food: boolean[] }>> {
+  async findByDate(
+    date: string,
+    token: string,
+  ): Promise<Array<Diary & { food: boolean[] }>> {
     const diaries = await this.diaryRepository.find({
       where: { date },
     });
@@ -61,6 +68,7 @@ export class DiaryService {
       diaries.map(async (diary) => {
         const patient = await this.patientService.findOneByCitizenID(
           diary.patientId,
+          token,
         );
 
         const patientName = patient.name;
@@ -77,6 +85,7 @@ export class DiaryService {
 
   async findByPatientId(
     patientId: string,
+    token: string,
   ): Promise<Array<Diary & { food: boolean[] }>> {
     const diaries = await this.diaryRepository.find({
       where: { patientId },
@@ -92,6 +101,7 @@ export class DiaryService {
       diaries.map(async (diary) => {
         const patient = await this.patientService.findOneByCitizenID(
           diary.patientId,
+          token,
         );
 
         const patientName = patient.name;
@@ -138,6 +148,10 @@ export class DiaryService {
       throw new NotFoundException(`No diary entries found`);
     }
 
+    if (role !== 'doctor' && diary.patientId !== citizenID) {
+      throw new ForbiddenException('Access denied');
+    }
+
     return this.transformDiary(diary);
   }
 
@@ -158,21 +172,33 @@ export class DiaryService {
     return this.transformDiary(diary); // Use the transformation function
   }
 
-  async update(id: number, updateDiaryDto: UpdateDiaryDto): Promise<Diary> {
+  async update(
+    id: number,
+    updateDiaryDto: UpdateDiaryDto,
+    patientId: string,
+  ): Promise<Diary> {
     const existingDiary = await this.diaryRepository.findOne({ where: { id } });
+
     if (!existingDiary) {
       throw new NotFoundException(`Diary with ID ${id} not found`);
+    }
+
+    if (existingDiary.patientId !== patientId) {
+      throw new ForbiddenException('Access denied');
     }
 
     const foodItems = updateDiaryDto.food || [];
     const foodBooleans = this.mapFoodArrayToBooleans(foodItems);
 
     this.diaryRepository.merge(existingDiary, updateDiaryDto, foodBooleans);
-    const updatedDiary = await this.diaryRepository.save(existingDiary);
+    const updatedDiary = await this.diaryRepository.save({
+      patientId,
+      ...existingDiary,
+    });
     return this.transformDiary(updatedDiary);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, patientId: string): Promise<void> {
     // Fetch the diary entry to ensure it exists and belongs to the patient
     const existingDiary = await this.diaryRepository.findOne({
       where: { id },
@@ -180,6 +206,10 @@ export class DiaryService {
 
     if (!existingDiary) {
       throw new NotFoundException(`Diary with ID ${id} not found`);
+    }
+
+    if (existingDiary.patientId !== patientId) {
+      throw new ForbiddenException('Access denied');
     }
 
     // List all images in the diary folder

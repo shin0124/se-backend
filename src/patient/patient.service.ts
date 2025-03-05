@@ -11,23 +11,39 @@ export class PatientService {
 
   constructor(private readonly httpService: HttpService) {}
 
-  async create(createPatientDto: CreatePatientDto): Promise<any> {
+  async create(
+    createPatientDto: CreatePatientDto,
+    token: string,
+  ): Promise<any> {
     const response = await lastValueFrom(
-      this.httpService.post(`${this.API_URL}`, createPatientDto),
+      this.httpService.post(`${this.API_URL}`, createPatientDto, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
     );
     return response.data;
   }
 
-  async findAll(): Promise<any> {
+  async findAll(token: string): Promise<any> {
     const response = await lastValueFrom(
-      this.httpService.get(`${this.API_URL}`),
+      this.httpService.get(`${this.API_URL}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
     );
     return response.data;
   }
 
-  async findOneByCitizenID(citizenID: string): Promise<any> {
+  async findOneByCitizenID(citizenID: string, token: string): Promise<any> {
     const response = await lastValueFrom(
-      this.httpService.get(`${this.API_URL}`, { params: { citizenID } }),
+      this.httpService.get(`${this.API_URL}`, {
+        params: { citizenID },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
     );
     return response.data;
   }
@@ -35,13 +51,18 @@ export class PatientService {
   async update(
     citizenID: string,
     updatePatientDto: UpdatePatientDto,
+    token: string,
   ): Promise<any> {
     const body = {
       citizenID,
       ...updatePatientDto,
     };
     const response = await lastValueFrom(
-      this.httpService.put(`${this.API_URL}`, body),
+      this.httpService.put(`${this.API_URL}`, body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
     );
     return response.data;
   }

@@ -10,12 +10,24 @@ async function bootstrap() {
   logger.log(`Starting application...`);
 
   const app = await NestFactory.create(AppModule);
+  // app.use(bodyParser.json({ limit: '50mb' }));
+  // app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-  // ตั้งค่า CORS
+  // app.use('/images', (req, res, next) => {
+  //   res.header('Access-Control-Allow-Origin', frontendUrl); // Ensure the frontend URL is allowed
+  //   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  //   res.header(
+  //     'Access-Control-Allow-Headers',
+  //     'Content-Type, X-Citizen-ID, X-Role, X-Token',
+  //   );
+  //   next();
+  // });
+
   app.enableCors({
     origin: frontendUrl,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: 'Content-Type, X-Citizen-ID, X-Role, X-Token',
+    credentials: true,
   });
 
   await app.listen(port);
