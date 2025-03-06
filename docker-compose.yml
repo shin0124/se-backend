@@ -1,3 +1,5 @@
+version: "3.7"
+
 services:
   postgres:
     image: "postgres:latest" # Use a specific version for consistency
@@ -33,25 +35,26 @@ services:
       - "5005:5005"
     environment:
       - PORT=5005
-      - FRONTEND_URL=${FRONTEND_URL}
-      - CLINIC_API_URL=${CLINIC_API_URL}
-      - DECRYPT_KEY=${DECRYPT_KEY}
+      - FRONTEND_URL=https://clinic.se.cpe.eng.cmu.ac.th
+      - CLINIC_API_URL=https://clinic.se.cpe.eng.cmu.ac.th/api/api
+      - DECRYPT_KEY=macaroni
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
+      - DB_USER=se_user
+      - DB_PASSWORD=se_password
+      - DB_NAME=se_db
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9500
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
-      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_ACCESS_KEY=SE-DIARY-MINIO
+      - MINIO_SECRET_KEY=XESDTPLHVTDDDFGGJKKNGVCGUJK
+      - MINIO_BUCKET=image
       - NODE_ENV=production
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
       - postgres
+      - minio
     command: ["npm", "run", "start"] # Adjust if using a different command
     restart: always
 
