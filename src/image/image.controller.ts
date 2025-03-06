@@ -32,7 +32,6 @@ export class ImageController {
     @Param('diaryId') diaryId: number,
     @UploadedFiles() files: (Express.Multer.File | string)[],
   ) {
-    console.log('fuck');
     const citizenID = this.encryptionService.decryptValue(encryptedCitizenID);
     const role = this.encryptionService.decryptValue(encryptedRole);
 

@@ -2,7 +2,7 @@ services:
   postgres:
     image: "postgres:latest" # Use a specific version for consistency
     ports:
-      - "7005:7005" # Only needed if you want to access from host directly
+      - "5432:5432" # Only needed if you want to access from host directly
     environment:
       - POSTGRES_USER=se_user
       - POSTGRES_PASSWORD=se_password
@@ -15,14 +15,14 @@ services:
     image: minio/minio:latest
     container_name: minio
     ports:
-      - "9500:9500"
-      - "9501:9501"
+      - "9000:9000"
+      - "9001:9001"
     environment:
       - MINIO_ROOT_USER=SE-DIARY-MINIO
       - MINIO_ROOT_PASSWORD=XESDTPLHVTDDDFGGJKKNGVCGUJK
     volumes:
       - minio_data:/data
-    command: server /data --console-address ":9501"
+    command: server /data --console-address ":9001"
     restart: always
 
   backend:

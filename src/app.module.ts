@@ -10,6 +10,7 @@ import { PatientModule } from './patient/patient.module';
 import { ImageModule } from './image/image.module';
 import { EventModule } from './event/event.module';
 import 'dotenv/config';
+import { EncryptionService } from './encryption/encryption.service';
 
 console.log('Database Config:', {
   host: process.env.DB_HOST,
@@ -43,6 +44,6 @@ console.log('Database Config:', {
     EventModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EncryptionService],
 })
 export class AppModule {}
